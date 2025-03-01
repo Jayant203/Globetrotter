@@ -5,7 +5,7 @@ const GameSession = require("../models/GameSession");
 const Destination = require("../models/Destination");
 const crypto = require("crypto");
 
-const FRONTEND_URL = "https://mellow-magic-production.up.railway.app"; // Update with your actual frontend URL
+const FRONTEND_URL = "https://mellow-magic-production.up.railway.app"; // Change this to your frontend URL
 
 // ✅ Ensure user is registered before inviting
 router.post("/challenge", async (req, res) => {
@@ -38,7 +38,7 @@ router.post("/challenge", async (req, res) => {
 });
 
 // ✅ Retrieve game session details using invite link
-router.get("/game/:inviteCode", async (req, res) => {
+router.get("/:inviteCode", async (req, res) => {
     const { inviteCode } = req.params;
 
     try {
@@ -55,3 +55,6 @@ router.get("/game/:inviteCode", async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+
+// ✅ Fix: Ensure Proper Export
+module.exports = router;
