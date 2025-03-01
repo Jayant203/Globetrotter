@@ -89,17 +89,21 @@ function App() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-900 via-black to-blue-900 flex flex-col items-center justify-center text-white p-6">
+        <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 bg-black">
+            {/* Animated Background */}
+            <div className="absolute inset-0 bg-[url('https://i.imgur.com/jPmeI5A.png')] bg-cover bg-fixed opacity-40 z-0"></div>
+
             {result === "🎉 Correct!" && <Confetti />}
 
+            {/* Game Modes Selection */}
             {!gameMode && !showLeaderboard && (
                 <motion.div 
                     initial={{ scale: 1.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 1 }}
-                    className="flex flex-col items-center"
+                    className="relative z-10 flex flex-col items-center text-center"
                 >
-                    <h1 className="text-5xl font-extrabold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-500">
+                    <h1 className="text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500 shadow-lg">
                         🌍 Globetrotter Challenge
                     </h1>
                     <p className="text-lg mb-6">Choose your game mode:</p>
@@ -108,7 +112,7 @@ function App() {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => startGame("timer", 1)} 
-                        className="p-4 m-2 text-lg font-bold bg-red-500 text-white rounded-lg shadow-lg"
+                        className="p-4 m-2 text-lg font-bold bg-red-500 text-white rounded-full shadow-xl hover:shadow-red-500"
                     >
                         ⏳ 1-Min Timer Mode
                     </motion.button>
@@ -117,19 +121,20 @@ function App() {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => startGame("points")} 
-                        className="p-4 m-2 text-lg font-bold bg-green-500 text-white rounded-lg shadow-lg"
+                        className="p-4 m-2 text-lg font-bold bg-green-500 text-white rounded-full shadow-xl hover:shadow-green-500"
                     >
                         🎯 Points Mode
                     </motion.button>
                 </motion.div>
             )}
 
+            {/* Game Play */}
             {gameMode && (
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="w-full max-w-lg text-center"
+                    className="relative z-10 w-full max-w-lg text-center bg-black bg-opacity-60 rounded-lg p-6 shadow-lg border border-gray-600"
                 >
                     {gameMode === "timer" && <p className="text-lg mb-2">⏳ Time Left: {timeLeft} sec</p>}
                     <p className="text-lg mb-2">✅ Correct: {correctAnswers} | ❌ Incorrect: {incorrectAnswers} | 🏆 Score: {score}</p>
@@ -145,7 +150,7 @@ function App() {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => handleAnswer(option)} 
-                                className="p-3 text-lg font-bold bg-gray-900 text-yellow-400 rounded-lg shadow-lg border border-yellow-500"
+                                className="p-3 text-lg font-bold bg-gray-900 text-yellow-400 rounded-full shadow-lg border border-yellow-500"
                             >
                                 {option}
                             </motion.button>
@@ -166,7 +171,7 @@ function App() {
                     {result && (
                         <button 
                             onClick={fetchDestination} 
-                            className="p-3 mt-6 text-lg font-bold bg-green-500 text-white rounded-lg shadow-lg"
+                            className="p-3 mt-6 text-lg font-bold bg-blue-500 text-white rounded-full shadow-lg"
                         >
                             🔄 Next Question
                         </button>
@@ -174,22 +179,11 @@ function App() {
 
                     <button 
                         onClick={endGame} 
-                        className="p-3 mt-6 text-lg font-bold bg-red-500 text-white rounded-lg shadow-lg"
+                        className="p-3 mt-6 text-lg font-bold bg-red-500 text-white rounded-full shadow-lg"
                     >
                         ⏹ Quit Game
                     </button>
                 </motion.div>
-            )}
-
-            {showLeaderboard && (
-                <div className="mt-6 bg-gray-900 text-gray-300 rounded-lg p-5 shadow-lg">
-                    <h2 className="text-xl font-semibold mb-4">🏆 Leaderboard</h2>
-                    {leaderboard.map((entry, index) => (
-                        <p key={index} className="text-lg">
-                            {index + 1}. Score: {entry.score} | Correct: {entry.correctAnswers}
-                        </p>
-                    ))}
-                </div>
             )}
         </div>
     );
