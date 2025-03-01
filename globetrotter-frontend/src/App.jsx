@@ -24,14 +24,30 @@ function App() {
         setTimeout(() => setShowIntro(false), 2000);
     }, []);
 
+    useEffect(() => {
+        if (gameMode) fetchDestination();
+    }, [gameMode]);
+
+    async function fetchDestination() {
+        try {
+            const response = await axios.get(`${API_URL}/destination/random`);
+            setClues(response.data.clues);
+            setOptions(response.data.options);
+            setCorrectAnswer(response.data.name);
+            setResult(null);
+        } catch (error) {
+            console.error("Error fetching destination", error);
+        }
+    }
+
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-center text-white">
+        <div className="relative flex flex-col items-center justify-center min-h-screen w-full text-white">
             {/* 🔥 Animated Background */}
             <div className="bg-animate"></div>
 
             {showIntro ? (
                 <motion.div
-                    initial={{ scale: 2, opacity: 0 }}
+                    initial={{ scale: 1.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 1 }}
                     className="flex flex-col items-center text-center"
@@ -40,19 +56,19 @@ function App() {
                 </motion.div>
             ) : !isRegistered ? (
                 <motion.div
-                    initial={{ y: -100, opacity: 0 }}
+                    initial={{ y: -50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 1 }}
-                    className="glass flex flex-col items-center p-6 text-center"
+                    className="glass flex flex-col items-center text-center w-96"
                 >
                     <input
                         type="text"
                         placeholder="Enter your username"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="p-4 text-lg rounded-lg bg-gray-800 text-white w-80 text-center"
+                        className="p-4 text-lg rounded-lg bg-gray-800 text-white w-full text-center"
                     />
-                    <button onClick={() => setIsRegistered(true)} className="p-4 mt-4 w-80 glowing">
+                    <button onClick={() => setIsRegistered(true)} className="p-4 mt-4 w-full glowing">
                         ✅ Start Game
                     </button>
                 </motion.div>
@@ -61,25 +77,15 @@ function App() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1 }}
-                    className="glass flex flex-col items-center text-center p-6"
+                    className="glass flex flex-col items-center text-center p-6 w-96"
                 >
-                    <h1 className="text-6xl font-extrabold mb-6 text-white">Choose Game Mode</h1>
-                    <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setGameMode("timer")}
-                        className="p-5 m-4 text-xl font-bold w-96 glowing"
-                    >
+                    <h1 className="text-5xl font-extrabold mb-6 text-white">Choose Mode</h1>
+                    <button onClick={() => setGameMode("timer")} className="p-5 m-4 text-xl w-full glowing">
                         ⏳ 1-Min Timer Mode
-                    </motion.button>
-                    <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setGameMode("points")}
-                        className="p-5 m-4 text-xl font-bold w-96 glowing"
-                    >
+                    </button>
+                    <button onClick={() => setGameMode("points")} className="p-5 m-4 text-xl w-full glowing">
                         🎯 Points Mode
-                    </motion.button>
+                    </button>
                 </motion.div>
             ) : (
                 <motion.div
@@ -91,7 +97,7 @@ function App() {
                     <p className="text-xl mb-4">{clues.join(" / ")}</p>
                     <div className="grid grid-cols-2 gap-6">
                         {options.map(option => (
-                            <button key={option} className="p-4 glowing w-80 text-lg">
+                            <button key={option} className="p-4 glowing w-full text-lg">
                                 {option}
                             </button>
                         ))}
