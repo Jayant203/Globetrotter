@@ -44,8 +44,12 @@ async function getRandomOptions(correctAnswer) {
         { $sample: { size: 3 } } // Get 3 random incorrect options
     ]).exec();
     
-    options = options.map(dest => dest.name);
-    options.push(correctAnswer); // Add correct answer
+    options = new Set(options.map(dest => dest.name)); // Ensure uniqueness
+    options.add(correctAnswer); // Add correct answer
+    
+    // Convert back to an array and ensure exactly 4 options
+    options = Array.from(options).slice(0, 4);
+    
     return options.sort(() => Math.random() - 0.5); // Shuffle options
 }
 

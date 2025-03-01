@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Confetti from "react-confetti";
 
 const API_URL = "https://globetrotter-production.up.railway.app/api";
@@ -18,13 +18,6 @@ function App() {
     const [timeLeft, setTimeLeft] = useState(0);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [leaderboard, setLeaderboard] = useState([]);
-    const [showIntro, setShowIntro] = useState(true);
-
-    useEffect(() => {
-        setTimeout(() => {
-            setShowIntro(false);
-        }, 3000); // 3-second intro animation
-    }, []);
 
     useEffect(() => { 
         if (gameMode) fetchDestination(); 
@@ -96,94 +89,102 @@ function App() {
     }
 
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 overflow-hidden bg-black">
-            {/* Dynamic 3D Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-black to-indigo-900 animate-pulse opacity-50 z-0">
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-stripes.png')] opacity-20"></div>
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/starfield.png')] opacity-30"></div>
-            </div>
+        <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 bg-black">
+            {/* Animated Background */}
+            <div className="absolute inset-0 bg-[url('https://i.imgur.com/jPmeI5A.png')] bg-cover bg-fixed opacity-40 z-0"></div>
 
-            <AnimatePresence>
-                {showIntro ? (
-                    <motion.div 
-                        key="intro"
-                        initial={{ opacity: 0, scale: 1.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, y: -50 }}
-                        transition={{ duration: 1 }}
-                        className="relative z-10 flex flex-col items-center justify-center text-center"
-                    >
-                        <motion.img 
-                            src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Globe_icon.svg"
-                            alt="Globe"
-                            className="w-32 h-32 animate-spin"
-                        />
-                        <h1 className="text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
-                            Globetrotter Challenge
-                        </h1>
-                    </motion.div>
-                ) : !gameMode && !showLeaderboard ? (
-                    <motion.div 
-                        key="modes"
-                        initial={{ y: 50, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 1 }}
-                        className="relative z-10 flex flex-col items-center justify-center text-center"
-                    >
-                        <h1 className="text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
-                            🌍 Globetrotter Challenge
-                        </h1>
-                        <p className="text-lg mb-6">Choose your game mode:</p>
+            {result === "🎉 Correct!" && <Confetti />}
 
-                        <motion.button 
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => startGame("timer", 1)} 
-                            className="p-4 m-2 text-lg font-bold bg-red-500 text-white rounded-full shadow-xl hover:shadow-red-500"
+            {/* Game Modes Selection */}
+            {!gameMode && !showLeaderboard && (
+                <motion.div 
+                    initial={{ scale: 1.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 1 }}
+                    className="relative z-10 flex flex-col items-center text-center"
+                >
+                    <h1 className="text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500 shadow-lg">
+                        🌍 Globetrotter Challenge
+                    </h1>
+                    <p className="text-lg mb-6">Choose your game mode:</p>
+
+                    <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => startGame("timer", 1)} 
+                        className="p-4 m-2 text-lg font-bold bg-red-500 text-white rounded-full shadow-xl hover:shadow-red-500"
+                    >
+                        ⏳ 1-Min Timer Mode
+                    </motion.button>
+
+                    <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => startGame("points")} 
+                        className="p-4 m-2 text-lg font-bold bg-green-500 text-white rounded-full shadow-xl hover:shadow-green-500"
+                    >
+                        🎯 Points Mode
+                    </motion.button>
+                </motion.div>
+            )}
+
+            {/* Game Play */}
+            {gameMode && (
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="relative z-10 w-full max-w-lg text-center bg-black bg-opacity-60 rounded-lg p-6 shadow-lg border border-gray-600"
+                >
+                    {gameMode === "timer" && <p className="text-lg mb-2">⏳ Time Left: {timeLeft} sec</p>}
+                    <p className="text-lg mb-2">✅ Correct: {correctAnswers} | ❌ Incorrect: {incorrectAnswers} | 🏆 Score: {score}</p>
+
+                    <div className="bg-gray-800 text-gray-300 rounded-lg p-5 shadow-lg border border-gray-600 mb-6">
+                        <p className="text-xl font-semibold">{clues.join(" / ")}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        {options.map(option => (
+                            <motion.button 
+                                key={option} 
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleAnswer(option)} 
+                                className="p-3 text-lg font-bold bg-gray-900 text-yellow-400 rounded-full shadow-lg border border-yellow-500"
+                            >
+                                {option}
+                            </motion.button>
+                        ))}
+                    </div>
+
+                    {result && (
+                        <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                            className="mt-6 bg-gray-900 text-gray-300 rounded-lg p-5 shadow-lg"
                         >
-                            ⏳ 1-Min Timer Mode
-                        </motion.button>
+                            <p className="text-xl font-semibold">{result}</p>
+                        </motion.div>
+                    )}
 
-                        <motion.button 
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => startGame("points")} 
-                            className="p-4 m-2 text-lg font-bold bg-green-500 text-white rounded-full shadow-xl hover:shadow-green-500"
+                    {result && (
+                        <button 
+                            onClick={fetchDestination} 
+                            className="p-3 mt-6 text-lg font-bold bg-blue-500 text-white rounded-full shadow-lg"
                         >
-                            🎯 Points Mode
-                        </motion.button>
-                    </motion.div>
-                ) : (
-                    <motion.div 
-                        key="game"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="relative z-10 w-full max-w-lg text-center bg-black bg-opacity-60 rounded-lg p-6 shadow-lg border border-gray-600"
+                            🔄 Next Question
+                        </button>
+                    )}
+
+                    <button 
+                        onClick={endGame} 
+                        className="p-3 mt-6 text-lg font-bold bg-red-500 text-white rounded-full shadow-lg"
                     >
-                        {gameMode === "timer" && <p className="text-lg mb-2">⏳ Time Left: {timeLeft} sec</p>}
-                        <p className="text-lg mb-2">✅ Correct: {correctAnswers} | ❌ Incorrect: {incorrectAnswers} | 🏆 Score: {score}</p>
-
-                        <div className="bg-gray-800 text-gray-300 rounded-lg p-5 shadow-lg border border-gray-600 mb-6">
-                            <p className="text-xl font-semibold">{clues.join(" / ")}</p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-6">
-                            {options.map(option => (
-                                <motion.button 
-                                    key={option} 
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => handleAnswer(option)} 
-                                    className="p-3 text-lg font-bold bg-gray-900 text-yellow-400 rounded-full shadow-lg border border-yellow-500"
-                                >
-                                    {option}
-                                </motion.button>
-                            ))}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        ⏹ Quit Game
+                    </button>
+                </motion.div>
+            )}
         </div>
     );
 }
