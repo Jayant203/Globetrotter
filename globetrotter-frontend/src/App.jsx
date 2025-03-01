@@ -40,7 +40,6 @@ function App() {
     // ✅ Register user
     async function registerUser() {
         if (!username) return alert("Please enter a username!");
-
         try {
             await axios.post(`${API_URL}/register`, { username });
             setIsRegistered(true);
@@ -105,7 +104,6 @@ function App() {
             const interval = setInterval(() => {
                 setTimeLeft((prevTime) => prevTime - 1);
             }, 1000);
-
             return () => clearInterval(interval);
         } else if (timeLeft === 0 && gameMode === "timer") {
             endGame();
@@ -128,32 +126,25 @@ function App() {
     }
 
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 bg-black">
-            <div className="absolute inset-0 bg-[url('https://i.imgur.com/jPmeI5A.png')] bg-cover bg-fixed opacity-40 z-0"></div>
+        <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 bg-animate">
+            {/* 🔥 Animated Background */}
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-800 via-blue-600 to-pink-500 animate-gradient"></div>
 
             {result === "🎉 Correct!" && <Confetti />}
 
             {/* ✅ Username Registration */}
             {!isRegistered && (
-                <div className="relative z-10 flex flex-col items-center">
+                <div className="relative z-10 flex flex-col items-center justify-center text-center">
                     <input 
                         type="text" 
                         placeholder="Enter your username" 
                         value={username} 
                         onChange={(e) => setUsername(e.target.value)}
-                        className="p-3 text-lg rounded-lg bg-gray-800 text-white"
+                        className="p-3 text-lg rounded-lg bg-gray-800 text-white w-72"
                     />
-                    <button onClick={registerUser} className="p-3 mt-4 text-lg bg-blue-500 text-white rounded-lg">
+                    <button onClick={registerUser} className="p-3 mt-4 text-lg bg-blue-500 text-white rounded-lg w-72">
                         ✅ Start Game
                     </button>
-                </div>
-            )}
-
-            {/* ✅ Inviter Score Display */}
-            {inviter && (
-                <div className="p-3 bg-gray-800 text-white rounded-lg mt-4">
-                    <p>🎉 You were invited by <strong>{inviter}</strong>!</p>
-                    <p>They scored: <strong>{inviterScore} points</strong></p>
                 </div>
             )}
 
@@ -172,16 +163,15 @@ function App() {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => startGame("timer", 1)} 
-                        className="p-4 m-2 text-lg font-bold bg-red-500 text-white rounded-full shadow-xl"
+                        className="p-4 m-2 text-lg font-bold bg-red-500 text-white rounded-full shadow-xl w-72"
                     >
                         ⏳ 1-Min Timer Mode
                     </motion.button>
-
                     <motion.button 
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => startGame("points")} 
-                        className="p-4 m-2 text-lg font-bold bg-green-500 text-white rounded-full shadow-xl"
+                        className="p-4 m-2 text-lg font-bold bg-green-500 text-white rounded-full shadow-xl w-72"
                     >
                         🎯 Points Mode
                     </motion.button>
@@ -196,24 +186,15 @@ function App() {
                     transition={{ duration: 0.5 }}
                     className="relative z-10 w-full max-w-lg text-center bg-black bg-opacity-60 rounded-lg p-6 shadow-lg border border-gray-600"
                 >
-                    {gameMode === "timer" && <p>⏳ Time Left: {timeLeft} sec</p>}
                     <p>✅ Correct: {correctAnswers} | ❌ Incorrect: {incorrectAnswers} | 🏆 Score: {score}</p>
-
                     <div className="bg-gray-800 text-gray-300 rounded-lg p-5 shadow-lg mb-6">
                         <p>{clues.join(" / ")}</p>
                     </div>
-
                     {options.map(option => (
-                        <button key={option} onClick={() => handleAnswer(option)} className="p-3 m-2 bg-gray-900 text-yellow-400 rounded-lg">
+                        <button key={option} onClick={() => handleAnswer(option)} className="p-3 m-2 bg-gray-900 text-yellow-400 rounded-lg w-72">
                             {option}
                         </button>
                     ))}
-
-                    <button onClick={challengeFriend} className="p-3 mt-4 bg-purple-500 text-white rounded-lg">
-                        🚀 Challenge a Friend
-                    </button>
-
-                    {inviteLink && <p className="text-blue-400">{inviteLink}</p>}
                 </motion.div>
             )}
         </div>
