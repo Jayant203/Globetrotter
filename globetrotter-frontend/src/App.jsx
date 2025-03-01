@@ -77,7 +77,7 @@ function App() {
 
     async function challengeFriend() {
         try {
-            const response = await axios.post(`${API_URL}/challenge`, { username, score });
+            const response = await axios.post(`${API_URL}/game/challenge`, { username, score });
             setInviteLink(response.data.inviteLink);
         } catch (error) {
             console.error("Challenge error:", error);
