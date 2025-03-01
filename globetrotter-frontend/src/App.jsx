@@ -10,7 +10,7 @@ const API_URL = "https://globetrotter-production.up.railway.app/api";
 function App() {
     const [showIntro, setShowIntro] = useState(true);
     const [username, setUsername] = useState(localStorage.getItem("username") || "");
-    const [isRegistered, setIsRegistered] = useState(!!username);
+    const [isRegistered, setIsRegistered] = useState(false); // ✅ Always start as false
     const [gameMode, setGameMode] = useState(null);
     const [clues, setClues] = useState([]);
     const [options, setOptions] = useState([]);
@@ -123,8 +123,12 @@ function App() {
                     />
                     <button
                         onClick={() => {
-                            localStorage.setItem("username", username);
-                            setIsRegistered(true);
+                            if (username.trim() !== "") { // ✅ Ensuring valid username
+                                localStorage.setItem("username", username);
+                                setIsRegistered(true);
+                            } else {
+                                alert("Please enter a valid username!");
+                            }
                         }}
                         className="p-4 mt-4 w-full glowing"
                     >
