@@ -33,6 +33,11 @@ function App() {
         }
     }
 
+    function startGame(mode) {
+        setGameMode(mode);
+        fetchDestination(); // ✅ Fetch the first question after selecting mode
+    }
+
     return (
         <div className="relative w-full h-screen flex flex-col items-center justify-center text-white">
             {/* 🌍 3D Globe Animation */}
@@ -82,10 +87,10 @@ function App() {
                     className="glass flex flex-col items-center text-center p-6 w-96"
                 >
                     <h1 className="text-5xl font-extrabold mb-6 text-white">Choose Mode</h1>
-                    <button onClick={() => setGameMode("timer")} className="p-5 m-4 text-xl w-full glowing">
+                    <button onClick={() => startGame("timer")} className="p-5 m-4 text-xl w-full glowing">
                         ⏳ 1-Min Timer Mode
                     </button>
-                    <button onClick={() => setGameMode("points")} className="p-5 m-4 text-xl w-full glowing">
+                    <button onClick={() => startGame("points")} className="p-5 m-4 text-xl w-full glowing">
                         🎯 Points Mode
                     </button>
                 </motion.div>
