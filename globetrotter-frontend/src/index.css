@@ -1,21 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* 🎨 3D Glassmorphism Background */
 .glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
   border-radius: 20px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  padding: 30px;
-  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+  padding: 35px;
+  box-shadow: 0 10px 35px rgba(255, 255, 255, 0.1);
 }
 
 /* ✅ Sleek Gaming Font */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
-
 body {
   @apply flex items-center justify-center min-h-screen bg-black text-white overflow-hidden;
   font-family: 'Poppins', sans-serif;
@@ -23,12 +22,26 @@ body {
   justify-content: center;
   align-items: center;
   text-align: center;
+  background: radial-gradient(circle, rgba(18,18,62,1) 0%, rgba(22,22,45,1) 100%);
+}
+
+/* 🔥 Animated Background */
+@keyframes gradientAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.bg-animate {
+  background: linear-gradient(-45deg, #ff0080, #ff00ff, #8000ff, #0040ff);
+  background-size: 400% 400%;
+  animation: gradientAnimation 12s ease infinite;
 }
 
 /* 🔥 Stylish Headings */
 h1 {
   @apply text-6xl font-extrabold text-center;
-  text-shadow: 5px 5px 15px rgba(255, 255, 255, 0.3);
+  text-shadow: 5px 5px 20px rgba(255, 255, 255, 0.3);
 }
 
 /* 🎮 Trivia Buttons */
@@ -38,7 +51,7 @@ button {
   box-shadow: 0px 0px 12px rgba(255, 0, 127, 0.8);
   border: none;
   color: white;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
 }
 
 /* ✅ Neon Glow Animation */
@@ -50,4 +63,47 @@ button {
 
 .glowing {
   animation: neonGlow 2s infinite alternate;
+}
+
+/* ✨ Trivia Question Box */
+.question-box {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0px 0px 25px rgba(255, 255, 255, 0.2);
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+/* 🎭 Correct & Incorrect Answer Effects */
+.correct-answer {
+  background: linear-gradient(135deg, #00ff88, #0088ff);
+  box-shadow: 0px 0px 15px rgba(0, 255, 136, 0.8);
+  animation: neonGlow 1s infinite alternate;
+}
+
+.incorrect-answer {
+  background: linear-gradient(135deg, #ff4c4c, #ff0000);
+  box-shadow: 0px 0px 15px rgba(255, 76, 76, 0.8);
+  animation: neonGlow 1s infinite alternate;
+}
+
+/* ✅ Quit & Restart Buttons */
+.quit-button {
+  background: linear-gradient(135deg, #ff3b3b, #cc0000);
+  box-shadow: 0px 0px 15px rgba(255, 59, 59, 0.8);
+  transition: transform 0.2s ease-in-out;
+}
+.quit-button:hover {
+  transform: scale(1.1);
+}
+
+.restart-button {
+  background: linear-gradient(135deg, #00ffcc, #0088ff);
+  box-shadow: 0px 0px 15px rgba(0, 255, 204, 0.8);
+  transition: transform 0.2s ease-in-out;
+}
+.restart-button:hover {
+  transform: scale(1.1);
 }

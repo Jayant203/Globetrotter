@@ -85,7 +85,7 @@ function App() {
     }
 
     return (
-        <div className="relative w-full h-screen flex flex-col items-center justify-center text-white">
+        <div className="relative w-full h-screen flex flex-col items-center justify-center text-white bg-animate">
             {/* 🌍 3D Globe Animation */}
             {showIntro ? (
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -102,7 +102,7 @@ function App() {
                         initial={{ opacity: 0, scale: 0.5 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 1 }}
-                        className="absolute text-6xl font-extrabold"
+                        className="absolute text-7xl font-extrabold"
                     >
                         🌍 Globetrotter Challenge
                     </motion.h1>
@@ -131,27 +131,12 @@ function App() {
                         ✅ Start Game
                     </button>
                 </motion.div>
-            ) : gameOver ? (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 1 }}
-                    className="glass flex flex-col items-center text-center p-6 w-96"
-                >
-                    <h1 className="text-4xl font-bold text-white mb-4">Game Over 🎮</h1>
-                    <p className="text-xl">🏆 Final Score: {score}</p>
-                    <p>✅ Correct Answers: {correctCount}</p>
-                    <p>❌ Incorrect Answers: {incorrectCount}</p>
-                    <button onClick={() => startGame("points")} className="p-4 mt-4 w-full glowing">
-                        🔄 Restart Game
-                    </button>
-                </motion.div>
             ) : !gameMode ? (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1 }}
-                    className="glass flex flex-col items-center text-center p-6 w-96"
+                    className="glass flex flex-col items-center text-center p-6 w-[50vw]"
                 >
                     <h1 className="text-5xl font-extrabold mb-6 text-white">Choose Mode</h1>
                     <button onClick={() => startGame("timer")} className="p-5 m-4 text-xl w-full glowing">
@@ -169,16 +154,16 @@ function App() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1 }}
-                    className="glass text-center w-full max-w-2xl p-6"
+                    className="glass text-center w-[70vw] p-6"
                 >
-                    <div className="p-6 text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl">
+                    <div className="p-6 text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl mb-6">
                         {clues.join(" / ")}
                     </div>
                     <div className="grid grid-cols-2 gap-6 mt-6">
                         {options.map(option => (
                             <button 
                                 key={option} 
-                                className="p-4 glowing w-full text-lg border-2 border-yellow-400 rounded-lg"
+                                className="p-5 glowing w-full text-lg border-2 border-yellow-400 rounded-lg"
                                 onClick={() => handleAnswer(option)}
                             >
                                 {option}
