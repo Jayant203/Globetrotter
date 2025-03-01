@@ -1,32 +1,25 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, Stars, Sphere } from "@react-three/drei";
 import Confetti from "react-confetti";
 
 const API_URL = "https://globetrotter-production.up.railway.app/api";
 
 function App() {
+    const [showIntro, setShowIntro] = useState(true);
     const [username, setUsername] = useState("");
     const [isRegistered, setIsRegistered] = useState(false);
+    const [gameMode, setGameMode] = useState(null);
     const [clues, setClues] = useState([]);
     const [options, setOptions] = useState([]);
-    const [result, setResult] = useState(null);
     const [correctAnswer, setCorrectAnswer] = useState("");
-    const [gameMode, setGameMode] = useState(null);
-    const [score, setScore] = useState(0);
-    const [correctAnswers, setCorrectAnswers] = useState(0);
-    const [incorrectAnswers, setIncorrectAnswers] = useState(0);
-    const [timer, setTimer] = useState(null);
-    const [timeLeft, setTimeLeft] = useState(0);
-    const [showIntro, setShowIntro] = useState(true);
+    const [result, setResult] = useState(null);
 
     useEffect(() => {
-        setTimeout(() => setShowIntro(false), 2000);
+        setTimeout(() => setShowIntro(false), 3000);
     }, []);
-
-    useEffect(() => {
-        if (gameMode) fetchDestination();
-    }, [gameMode]);
 
     async function fetchDestination() {
         try {
@@ -41,19 +34,28 @@ function App() {
     }
 
     return (
-        <div className="relative flex flex-col items-center justify-center min-h-screen w-full text-white">
-            {/* 🔥 Animated Background */}
-            <div className="bg-animate"></div>
-
+        <div className="relative w-full h-screen flex flex-col items-center justify-center text-white">
+            {/* 🌍 3D Globe Animation */}
             {showIntro ? (
-                <motion.div
-                    initial={{ scale: 1.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 1 }}
-                    className="flex flex-col items-center text-center"
-                >
-                    <h1 className="text-7xl font-extrabold text-white">🌍 Globetrotter Challenge</h1>
-                </motion.div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <Canvas>
+                        <OrbitControls enableZoom={false} />
+                        <Stars />
+                        <ambientLight intensity={0.5} />
+                        <directionalLight position={[2, 5, 2]} intensity={1} />
+                        <Sphere args={[1.5, 32, 32]}>
+                            <meshStandardMaterial color="blue" />
+                        </Sphere>
+                    </Canvas>
+                    <motion.h1
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 1 }}
+                        className="absolute text-6xl font-extrabold"
+                    >
+                        🌍 Globetrotter Challenge
+                    </motion.h1>
+                </div>
             ) : !isRegistered ? (
                 <motion.div
                     initial={{ y: -50, opacity: 0 }}
