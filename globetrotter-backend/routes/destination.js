@@ -8,17 +8,23 @@ router.get("/random", async (req, res) => {
         const count = await Destination.countDocuments();
         const random = Math.floor(Math.random() * count);
         const destination = await Destination.findOne().skip(random);
-        res.json({ clues: destination.clues, options: await getRandomOptions(destination.name) });
+        res.json({
+            name: destination.name, // ✅ Send correct answer
+            clues: destination.clues,
+            options: await getRandomOptions(destination.name),
+        });
     } catch (error) {
         res.status(500).json({ error: "Server error" });
     }
 });
 
+
 // Verify answer
 router.post("/verify", async (req, res) => {
-    const { answer, correctAnswer } = req.body;
-    if (answer === correctAnswer) {
-        const destination = await Destination.findOne({ name: correctAnswer });
+    const { answer } = req.body;
+    const destination = await Destination.findOne({ name: answer });
+
+    if (destination) {
         res.json({ correct: true, funFact: destination.funFacts[0] });
     } else {
         res.json({ correct: false, message: "Oops! Try again." });
