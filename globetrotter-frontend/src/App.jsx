@@ -96,8 +96,12 @@ function App() {
     }
 
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 bg-black overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-black to-indigo-900 animate-pulse opacity-50 z-0"></div>
+        <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 overflow-hidden">
+            {/* 3D Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-black to-indigo-900 animate-pulse opacity-50 z-0">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-stripes.png')] opacity-20"></div>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/starfield.png')] opacity-30"></div>
+            </div>
 
             <AnimatePresence>
                 {showIntro ? (
@@ -107,14 +111,14 @@ function App() {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, y: -50 }}
                         transition={{ duration: 1 }}
-                        className="relative z-10 flex flex-col items-center justify-center"
+                        className="relative z-10 flex flex-col items-center justify-center text-center"
                     >
                         <motion.img 
                             src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Globe_icon.svg"
                             alt="Globe"
                             className="w-32 h-32 animate-spin"
                         />
-                        <h1 className="text-6xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
+                        <h1 className="text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
                             Globetrotter Challenge
                         </h1>
                     </motion.div>
@@ -124,9 +128,9 @@ function App() {
                         initial={{ y: 50, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 1 }}
-                        className="relative z-10 flex flex-col items-center text-center"
+                        className="relative z-10 flex flex-col items-center justify-center text-center"
                     >
-                        <h1 className="text-6xl font-extrabold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
+                        <h1 className="text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
                             🌍 Globetrotter Challenge
                         </h1>
                         <p className="text-lg mb-6">Choose your game mode:</p>
