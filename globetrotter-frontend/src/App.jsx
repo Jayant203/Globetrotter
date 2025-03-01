@@ -18,183 +18,84 @@ function App() {
     const [incorrectAnswers, setIncorrectAnswers] = useState(0);
     const [timer, setTimer] = useState(null);
     const [timeLeft, setTimeLeft] = useState(0);
-    const [inviteLink, setInviteLink] = useState(null);
-    const [inviter, setInviter] = useState(null);
-    const [inviterScore, setInviterScore] = useState(null);
+    const [showIntro, setShowIntro] = useState(true);
 
-    // ✅ Detect if user joins via invite link
     useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const inviteCode = urlParams.get("invite");
-
-        if (inviteCode) {
-            axios.get(`${API_URL}/game/${inviteCode}`)
-                .then(response => {
-                    setInviter(response.data.inviter);
-                    setInviterScore(response.data.score);
-                })
-                .catch(error => console.error("Error fetching game session", error));
-        }
+        setTimeout(() => setShowIntro(false), 2000);
     }, []);
 
-    // ✅ Register user
-    async function registerUser() {
-        if (!username) return alert("Please enter a username!");
-        try {
-            await axios.post(`${API_URL}/register`, { username });
-            setIsRegistered(true);
-        } catch (error) {
-            console.error("Registration error", error);
-        }
-    }
-
-    // ✅ Fetch a random destination
-    async function fetchDestination() {
-        try {
-            const response = await axios.get(`${API_URL}/destination/random`);
-            setClues(response.data.clues);
-            setOptions(response.data.options);
-            setCorrectAnswer(response.data.name);
-            setResult(null);
-        } catch (error) {
-            console.error("Error fetching destination", error);
-        }
-    }
-
-    // ✅ Handle answer selection
-    async function handleAnswer(selectedOption) {
-        if (result) return;
-
-        try {
-            const response = await axios.post(`${API_URL}/destination/verify`, {
-                answer: selectedOption,
-                correctAnswer: correctAnswer,
-            });
-
-            if (response.data.correct) {
-                setResult("🎉 Correct!");
-                setScore((prev) => prev + 10);
-                setCorrectAnswers((prev) => prev + 1);
-            } else {
-                setResult("❌ Incorrect!");
-                setScore((prev) => prev - 5);
-                setIncorrectAnswers((prev) => prev + 1);
-            }
-        } catch (error) {
-            console.error("Error verifying answer", error);
-        }
-    }
-
-    // ✅ Start game modes
-    function startGame(mode, time = 0) {
-        setGameMode(mode);
-        setScore(0);
-        setCorrectAnswers(0);
-        setIncorrectAnswers(0);
-        if (mode === "timer") {
-            setTimeLeft(time * 60);
-            setTimer(true);
-        }
-        fetchDestination();
-    }
-
-    // ✅ Timer logic
-    useEffect(() => {
-        if (timer && timeLeft > 0) {
-            const interval = setInterval(() => {
-                setTimeLeft((prevTime) => prevTime - 1);
-            }, 1000);
-            return () => clearInterval(interval);
-        } else if (timeLeft === 0 && gameMode === "timer") {
-            endGame();
-        }
-    }, [timeLeft, timer]);
-
-    // ✅ Generate an invite link
-    async function challengeFriend() {
-        try {
-            const response = await axios.post(`${API_URL}/challenge`, { username, score });
-            setInviteLink(response.data.inviteLink);
-        } catch (error) {
-            console.error("Challenge error", error);
-        }
-    }
-
-    // ✅ End game
-    function endGame() {
-        setGameMode(null);
-    }
-
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 bg-animate">
+        <div className="relative min-h-screen flex flex-col items-center justify-center text-white">
             {/* 🔥 Animated Background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-800 via-blue-600 to-pink-500 animate-gradient"></div>
+            <div className="bg-animate"></div>
 
-            {result === "🎉 Correct!" && <Confetti />}
-
-            {/* ✅ Username Registration */}
-            {!isRegistered && (
-                <div className="relative z-10 flex flex-col items-center justify-center text-center">
-                    <input 
-                        type="text" 
-                        placeholder="Enter your username" 
-                        value={username} 
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="p-3 text-lg rounded-lg bg-gray-800 text-white w-72"
-                    />
-                    <button onClick={registerUser} className="p-3 mt-4 text-lg bg-blue-500 text-white rounded-lg w-72">
-                        ✅ Start Game
-                    </button>
-                </div>
-            )}
-
-            {/* ✅ Game Modes Selection */}
-            {isRegistered && !gameMode && (
-                <motion.div 
-                    initial={{ scale: 1.5, opacity: 0 }}
+            {showIntro ? (
+                <motion.div
+                    initial={{ scale: 2, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 1 }}
-                    className="relative z-10 flex flex-col items-center text-center"
+                    className="flex flex-col items-center text-center"
                 >
-                    <h1 className="text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500 shadow-lg">
-                        🌍 Globetrotter Challenge
-                    </h1>
-                    <motion.button 
+                    <h1 className="text-7xl font-extrabold text-white">🌍 Globetrotter Challenge</h1>
+                </motion.div>
+            ) : !isRegistered ? (
+                <motion.div
+                    initial={{ y: -100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 1 }}
+                    className="glass flex flex-col items-center p-6 text-center"
+                >
+                    <input
+                        type="text"
+                        placeholder="Enter your username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        className="p-4 text-lg rounded-lg bg-gray-800 text-white w-80 text-center"
+                    />
+                    <button onClick={() => setIsRegistered(true)} className="p-4 mt-4 w-80 glowing">
+                        ✅ Start Game
+                    </button>
+                </motion.div>
+            ) : !gameMode ? (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1 }}
+                    className="glass flex flex-col items-center text-center p-6"
+                >
+                    <h1 className="text-6xl font-extrabold mb-6 text-white">Choose Game Mode</h1>
+                    <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => startGame("timer", 1)} 
-                        className="p-4 m-2 text-lg font-bold bg-red-500 text-white rounded-full shadow-xl w-72"
+                        onClick={() => setGameMode("timer")}
+                        className="p-5 m-4 text-xl font-bold w-96 glowing"
                     >
                         ⏳ 1-Min Timer Mode
                     </motion.button>
-                    <motion.button 
+                    <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => startGame("points")} 
-                        className="p-4 m-2 text-lg font-bold bg-green-500 text-white rounded-full shadow-xl w-72"
+                        onClick={() => setGameMode("points")}
+                        className="p-5 m-4 text-xl font-bold w-96 glowing"
                     >
                         🎯 Points Mode
                     </motion.button>
                 </motion.div>
-            )}
-
-            {/* ✅ Game Play */}
-            {gameMode && (
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="relative z-10 w-full max-w-lg text-center bg-black bg-opacity-60 rounded-lg p-6 shadow-lg border border-gray-600"
+            ) : (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1 }}
+                    className="glass text-center w-full max-w-2xl p-6"
                 >
-                    <p>✅ Correct: {correctAnswers} | ❌ Incorrect: {incorrectAnswers} | 🏆 Score: {score}</p>
-                    <div className="bg-gray-800 text-gray-300 rounded-lg p-5 shadow-lg mb-6">
-                        <p>{clues.join(" / ")}</p>
+                    <p className="text-xl mb-4">{clues.join(" / ")}</p>
+                    <div className="grid grid-cols-2 gap-6">
+                        {options.map(option => (
+                            <button key={option} className="p-4 glowing w-80 text-lg">
+                                {option}
+                            </button>
+                        ))}
                     </div>
-                    {options.map(option => (
-                        <button key={option} onClick={() => handleAnswer(option)} className="p-3 m-2 bg-gray-900 text-yellow-400 rounded-lg w-72">
-                            {option}
-                        </button>
-                    ))}
                 </motion.div>
             )}
         </div>
