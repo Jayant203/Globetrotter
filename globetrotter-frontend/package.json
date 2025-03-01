@@ -11,8 +11,8 @@
     "start": "serve -s dist -l 3000"
   },
   "dependencies": {
-    "@react-three/drei": "^10.0.3",
-    "@react-three/fiber": "^8.13.0",
+    "@react-three/drei": "^9.96.2",
+    "@react-three/fiber": "^8.18.0",
     "axios": "^1.8.1",
     "confetti-react": "^2.6.0",
     "framer-motion": "^12.4.7",
