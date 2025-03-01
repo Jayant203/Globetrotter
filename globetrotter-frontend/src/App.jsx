@@ -126,7 +126,7 @@ function App() {
                     transition={{ duration: 1 }}
                     className="relative z-10 flex flex-col items-center text-center"
                 >
-                    <h1 className="text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
+                    <h1 className="text-6xl font-extrabold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
                         🌍 Globetrotter Challenge
                     </h1>
                     <p className="text-lg mb-6">Choose your game mode:</p>
