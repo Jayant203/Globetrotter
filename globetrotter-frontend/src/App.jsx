@@ -18,14 +18,6 @@ function App() {
     const [timeLeft, setTimeLeft] = useState(0);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [leaderboard, setLeaderboard] = useState([]);
-    const [showIntro, setShowIntro] = useState(true);
-
-    // Load intro animation first
-    useEffect(() => {
-        setTimeout(() => {
-            setShowIntro(false);
-        }, 3000); // 3-second intro animation
-    }, []);
 
     useEffect(() => { 
         if (gameMode) fetchDestination(); 
@@ -97,37 +89,21 @@ function App() {
     }
 
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 bg-black overflow-hidden">
+        <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 bg-black">
             {/* Animated Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-black to-indigo-900 animate-pulse opacity-50 z-0"></div>
+            <div className="absolute inset-0 bg-[url('https://i.imgur.com/jPmeI5A.png')] bg-cover bg-fixed opacity-40 z-0"></div>
 
-            {showIntro ? (
-                // Intro Animation (Globe & Title Appearing)
+            {result === "🎉 Correct!" && <Confetti />}
+
+            {/* Game Modes Selection */}
+            {!gameMode && !showLeaderboard && (
                 <motion.div 
-                    initial={{ opacity: 0, scale: 1.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 1 }}
-                    className="relative z-10 flex flex-col items-center justify-center"
-                >
-                    <motion.img 
-                        src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Globe_icon.svg"
-                        alt="Globe"
-                        className="w-32 h-32 animate-spin"
-                    />
-                    <h1 className="text-6xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
-                        Globetrotter Challenge
-                    </h1>
-                </motion.div>
-            ) : !gameMode && !showLeaderboard ? (
-                // Game Modes Selection (After Intro)
-                <motion.div 
-                    initial={{ y: 50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
+                    initial={{ scale: 1.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 1 }}
                     className="relative z-10 flex flex-col items-center text-center"
                 >
-                    <h1 className="text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
-                    <h1 className="text-6xl font-extrabold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
+                    <h1 className="text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500 shadow-lg">
                         🌍 Globetrotter Challenge
                     </h1>
                     <p className="text-lg mb-6">Choose your game mode:</p>
@@ -150,8 +126,10 @@ function App() {
                         🎯 Points Mode
                     </motion.button>
                 </motion.div>
-            ) : (
-                // Game Play UI
+            )}
+
+            {/* Game Play */}
+            {gameMode && (
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -178,6 +156,33 @@ function App() {
                             </motion.button>
                         ))}
                     </div>
+
+                    {result && (
+                        <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                            className="mt-6 bg-gray-900 text-gray-300 rounded-lg p-5 shadow-lg"
+                        >
+                            <p className="text-xl font-semibold">{result}</p>
+                        </motion.div>
+                    )}
+
+                    {result && (
+                        <button 
+                            onClick={fetchDestination} 
+                            className="p-3 mt-6 text-lg font-bold bg-blue-500 text-white rounded-full shadow-lg"
+                        >
+                            🔄 Next Question
+                        </button>
+                    )}
+
+                    <button 
+                        onClick={endGame} 
+                        className="p-3 mt-6 text-lg font-bold bg-red-500 text-white rounded-full shadow-lg"
+                    >
+                        ⏹ Quit Game
+                    </button>
                 </motion.div>
             )}
         </div>
