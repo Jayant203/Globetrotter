@@ -1,6 +1,65 @@
 const express = require("express");
 const router = express.Router();
+const User = require("../models/User");
+const GameSession = require("../models/GameSession");
 const Destination = require("../models/Destination");
+const crypto = require("crypto");
+
+// ✅ Register user
+router.post("/register", async (req, res) => {
+    const { username } = req.body;
+
+    try {
+        let user = await User.findOne({ username });
+
+        if (!user) {
+            user = new User({ username });
+            await user.save();
+        }
+
+        res.json({ message: "User registered!", user });
+    } catch (error) {
+        console.error("Registration error:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// ✅ Create a challenge link
+router.post("/challenge", async (req, res) => {
+    const { username, score } = req.body;
+
+    try {
+        const user = await User.findOne({ username });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        const inviteCode = crypto.randomBytes(4).toString("hex");
+
+        const gameSession = new GameSession({ inviter: user._id, score, inviteCode });
+        await gameSession.save();
+
+        res.json({ inviteLink: `https://yourgame.com/play?invite=${inviteCode}` });
+    } catch (error) {
+        console.error("Challenge error:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// ✅ Retrieve game session via invite link
+router.get("/game/:inviteCode", async (req, res) => {
+    const { inviteCode } = req.params;
+
+    try {
+        const session = await GameSession.findOne({ inviteCode }).populate("inviter");
+        if (!session) return res.status(404).json({ error: "Invalid invite link" });
+
+        res.json({ inviter: session.inviter.username, score: session.score });
+    } catch (error) {
+        console.error("Game session error:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+
 
 // ✅ Get a random destination
 router.get("/random", async (req, res) => {

@@ -6,6 +6,8 @@ import Confetti from "react-confetti";
 const API_URL = "https://globetrotter-production.up.railway.app/api";
 
 function App() {
+    const [username, setUsername] = useState("");
+    const [isRegistered, setIsRegistered] = useState(false);
     const [clues, setClues] = useState([]);
     const [options, setOptions] = useState([]);
     const [result, setResult] = useState(null);
@@ -16,25 +18,38 @@ function App() {
     const [incorrectAnswers, setIncorrectAnswers] = useState(0);
     const [timer, setTimer] = useState(null);
     const [timeLeft, setTimeLeft] = useState(0);
-    const [showLeaderboard, setShowLeaderboard] = useState(false);
-    const [leaderboard, setLeaderboard] = useState([]);
+    const [inviteLink, setInviteLink] = useState(null);
+    const [inviter, setInviter] = useState(null);
+    const [inviterScore, setInviterScore] = useState(null);
 
-    useEffect(() => { 
-        if (gameMode) fetchDestination(); 
-    }, [gameMode]);
-
+    // ✅ Detect if user joins via invite link
     useEffect(() => {
-        if (timer && timeLeft > 0) {
-            const interval = setInterval(() => {
-                setTimeLeft((prevTime) => prevTime - 1);
-            }, 1000);
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteCode = urlParams.get("invite");
 
-            return () => clearInterval(interval);
-        } else if (timeLeft === 0 && gameMode === "timer") {
-            endGame();
+        if (inviteCode) {
+            axios.get(`${API_URL}/game/${inviteCode}`)
+                .then(response => {
+                    setInviter(response.data.inviter);
+                    setInviterScore(response.data.score);
+                })
+                .catch(error => console.error("Error fetching game session", error));
         }
-    }, [timeLeft, timer]);
+    }, []);
 
+    // ✅ Register user
+    async function registerUser() {
+        if (!username) return alert("Please enter a username!");
+
+        try {
+            await axios.post(`${API_URL}/register`, { username });
+            setIsRegistered(true);
+        } catch (error) {
+            console.error("Registration error", error);
+        }
+    }
+
+    // ✅ Fetch a random destination
     async function fetchDestination() {
         try {
             const response = await axios.get(`${API_URL}/destination/random`);
@@ -47,6 +62,7 @@ function App() {
         }
     }
 
+    // ✅ Handle answer selection
     async function handleAnswer(selectedOption) {
         if (result) return;
 
@@ -70,33 +86,79 @@ function App() {
         }
     }
 
+    // ✅ Start game modes
     function startGame(mode, time = 0) {
         setGameMode(mode);
         setScore(0);
         setCorrectAnswers(0);
         setIncorrectAnswers(0);
-        setShowLeaderboard(false);
         if (mode === "timer") {
             setTimeLeft(time * 60);
             setTimer(true);
         }
+        fetchDestination();
     }
 
+    // ✅ Timer logic
+    useEffect(() => {
+        if (timer && timeLeft > 0) {
+            const interval = setInterval(() => {
+                setTimeLeft((prevTime) => prevTime - 1);
+            }, 1000);
+
+            return () => clearInterval(interval);
+        } else if (timeLeft === 0 && gameMode === "timer") {
+            endGame();
+        }
+    }, [timeLeft, timer]);
+
+    // ✅ Generate an invite link
+    async function challengeFriend() {
+        try {
+            const response = await axios.post(`${API_URL}/challenge`, { username, score });
+            setInviteLink(response.data.inviteLink);
+        } catch (error) {
+            console.error("Challenge error", error);
+        }
+    }
+
+    // ✅ End game
     function endGame() {
-        setLeaderboard([...leaderboard, { score, correctAnswers }]);
-        setShowLeaderboard(true);
         setGameMode(null);
     }
 
     return (
         <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 bg-black">
-            {/* Animated Background */}
             <div className="absolute inset-0 bg-[url('https://i.imgur.com/jPmeI5A.png')] bg-cover bg-fixed opacity-40 z-0"></div>
 
             {result === "🎉 Correct!" && <Confetti />}
 
-            {/* Game Modes Selection */}
-            {!gameMode && !showLeaderboard && (
+            {/* ✅ Username Registration */}
+            {!isRegistered && (
+                <div className="relative z-10 flex flex-col items-center">
+                    <input 
+                        type="text" 
+                        placeholder="Enter your username" 
+                        value={username} 
+                        onChange={(e) => setUsername(e.target.value)}
+                        className="p-3 text-lg rounded-lg bg-gray-800 text-white"
+                    />
+                    <button onClick={registerUser} className="p-3 mt-4 text-lg bg-blue-500 text-white rounded-lg">
+                        ✅ Start Game
+                    </button>
+                </div>
+            )}
+
+            {/* ✅ Inviter Score Display */}
+            {inviter && (
+                <div className="p-3 bg-gray-800 text-white rounded-lg mt-4">
+                    <p>🎉 You were invited by <strong>{inviter}</strong>!</p>
+                    <p>They scored: <strong>{inviterScore} points</strong></p>
+                </div>
+            )}
+
+            {/* ✅ Game Modes Selection */}
+            {isRegistered && !gameMode && (
                 <motion.div 
                     initial={{ scale: 1.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -106,13 +168,11 @@ function App() {
                     <h1 className="text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500 shadow-lg">
                         🌍 Globetrotter Challenge
                     </h1>
-                    <p className="text-lg mb-6">Choose your game mode:</p>
-
                     <motion.button 
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => startGame("timer", 1)} 
-                        className="p-4 m-2 text-lg font-bold bg-red-500 text-white rounded-full shadow-xl hover:shadow-red-500"
+                        className="p-4 m-2 text-lg font-bold bg-red-500 text-white rounded-full shadow-xl"
                     >
                         ⏳ 1-Min Timer Mode
                     </motion.button>
@@ -121,14 +181,14 @@ function App() {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => startGame("points")} 
-                        className="p-4 m-2 text-lg font-bold bg-green-500 text-white rounded-full shadow-xl hover:shadow-green-500"
+                        className="p-4 m-2 text-lg font-bold bg-green-500 text-white rounded-full shadow-xl"
                     >
                         🎯 Points Mode
                     </motion.button>
                 </motion.div>
             )}
 
-            {/* Game Play */}
+            {/* ✅ Game Play */}
             {gameMode && (
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
@@ -136,53 +196,24 @@ function App() {
                     transition={{ duration: 0.5 }}
                     className="relative z-10 w-full max-w-lg text-center bg-black bg-opacity-60 rounded-lg p-6 shadow-lg border border-gray-600"
                 >
-                    {gameMode === "timer" && <p className="text-lg mb-2">⏳ Time Left: {timeLeft} sec</p>}
-                    <p className="text-lg mb-2">✅ Correct: {correctAnswers} | ❌ Incorrect: {incorrectAnswers} | 🏆 Score: {score}</p>
+                    {gameMode === "timer" && <p>⏳ Time Left: {timeLeft} sec</p>}
+                    <p>✅ Correct: {correctAnswers} | ❌ Incorrect: {incorrectAnswers} | 🏆 Score: {score}</p>
 
-                    <div className="bg-gray-800 text-gray-300 rounded-lg p-5 shadow-lg border border-gray-600 mb-6">
-                        <p className="text-xl font-semibold">{clues.join(" / ")}</p>
+                    <div className="bg-gray-800 text-gray-300 rounded-lg p-5 shadow-lg mb-6">
+                        <p>{clues.join(" / ")}</p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
-                        {options.map(option => (
-                            <motion.button 
-                                key={option} 
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => handleAnswer(option)} 
-                                className="p-3 text-lg font-bold bg-gray-900 text-yellow-400 rounded-full shadow-lg border border-yellow-500"
-                            >
-                                {option}
-                            </motion.button>
-                        ))}
-                    </div>
-
-                    {result && (
-                        <motion.div 
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                            className="mt-6 bg-gray-900 text-gray-300 rounded-lg p-5 shadow-lg"
-                        >
-                            <p className="text-xl font-semibold">{result}</p>
-                        </motion.div>
-                    )}
-
-                    {result && (
-                        <button 
-                            onClick={fetchDestination} 
-                            className="p-3 mt-6 text-lg font-bold bg-blue-500 text-white rounded-full shadow-lg"
-                        >
-                            🔄 Next Question
+                    {options.map(option => (
+                        <button key={option} onClick={() => handleAnswer(option)} className="p-3 m-2 bg-gray-900 text-yellow-400 rounded-lg">
+                            {option}
                         </button>
-                    )}
+                    ))}
 
-                    <button 
-                        onClick={endGame} 
-                        className="p-3 mt-6 text-lg font-bold bg-red-500 text-white rounded-full shadow-lg"
-                    >
-                        ⏹ Quit Game
+                    <button onClick={challengeFriend} className="p-3 mt-4 bg-purple-500 text-white rounded-lg">
+                        🚀 Challenge a Friend
                     </button>
+
+                    {inviteLink && <p className="text-blue-400">{inviteLink}</p>}
                 </motion.div>
             )}
         </div>
