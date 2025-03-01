@@ -28,12 +28,14 @@ function App() {
 
     // ✅ Correctly define `handleAnswer` inside the component
     async function handleAnswer(selectedOption) {
+        if (result) return; // ✅ Prevents multiple clicks when result is already displayed
+    
         try {
             const response = await axios.post(`${API_URL}/destination/verify`, {
                 answer: selectedOption,
-                correctAnswer: correctAnswer, // ✅ Send correct answer
+                correctAnswer: correctAnswer,
             });
-
+    
             if (response.data.correct) {
                 setResult(`🎉 Correct! Fun Fact: ${response.data.funFact}`);
             } else {
@@ -50,18 +52,22 @@ function App() {
             {result && <Confetti />}
             <h1 className="text-3xl font-bold mb-4">🌍 Globetrotter Challenge</h1>
             <p className="text-lg mb-4">{clues.join(" / ")}</p>
-
+    
             {options.map(option => (
                 <button key={option} onClick={() => handleAnswer(option)} className="p-2 m-2 bg-black text-white rounded">
                     {option}
                 </button>
             ))}
-
+    
+            {/* ✅ Show result only after an answer is selected */}
             {result && <p className="mt-4 text-lg font-semibold">{result}</p>}
-
-            <button onClick={fetchDestination} className="p-2 mt-4 bg-blue-500 text-white rounded">
-                Play Again
-            </button>
+    
+            {/* ✅ Show "Play Again" button only AFTER answering */}
+            {result && (
+                <button onClick={fetchDestination} className="p-2 mt-4 bg-blue-500 text-white rounded">
+                    Play Again
+                </button>
+            )}
         </div>
     );
 }
