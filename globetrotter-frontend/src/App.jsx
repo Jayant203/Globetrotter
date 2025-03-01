@@ -20,6 +20,7 @@ function App() {
     const [leaderboard, setLeaderboard] = useState([]);
     const [showIntro, setShowIntro] = useState(true);
 
+    // Load intro animation first
     useEffect(() => {
         setTimeout(() => {
             setShowIntro(false);
@@ -96,12 +97,12 @@ function App() {
     }
 
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 overflow-hidden">
-            {/* ✨ Moving Background Animation */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-black to-indigo-900 animate-gradient-move z-0"></div>
+        <div className="relative min-h-screen flex flex-col items-center justify-center text-white p-6 bg-black overflow-hidden">
+            {/* Animated Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-black to-indigo-900 animate-pulse opacity-50 z-0"></div>
 
             {showIntro ? (
-                // 🌍 Animated Intro (Globe & Title Appearing)
+                // Intro Animation (Globe & Title Appearing)
                 <motion.div 
                     initial={{ opacity: 0, scale: 1.5 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -111,14 +112,14 @@ function App() {
                     <motion.img 
                         src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Globe_icon.svg"
                         alt="Globe"
-                        className="w-40 h-40 animate-spin"
+                        className="w-32 h-32 animate-spin"
                     />
                     <h1 className="text-6xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
                         Globetrotter Challenge
                     </h1>
                 </motion.div>
             ) : !gameMode && !showLeaderboard ? (
-                // 🎮 Game Modes Selection
+                // Game Modes Selection (After Intro)
                 <motion.div 
                     initial={{ y: 50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -126,6 +127,7 @@ function App() {
                     className="relative z-10 flex flex-col items-center text-center"
                 >
                     <h1 className="text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
+                    <h1 className="text-6xl font-extrabold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
                         🌍 Globetrotter Challenge
                     </h1>
                     <p className="text-lg mb-6">Choose your game mode:</p>
@@ -149,12 +151,12 @@ function App() {
                     </motion.button>
                 </motion.div>
             ) : (
-                // 🏆 Game Play UI
+                // Game Play UI
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="relative z-10 w-full max-w-lg text-center bg-black bg-opacity-70 rounded-lg p-6 shadow-lg border border-gray-600"
+                    className="relative z-10 w-full max-w-lg text-center bg-black bg-opacity-60 rounded-lg p-6 shadow-lg border border-gray-600"
                 >
                     {gameMode === "timer" && <p className="text-lg mb-2">⏳ Time Left: {timeLeft} sec</p>}
                     <p className="text-lg mb-2">✅ Correct: {correctAnswers} | ❌ Incorrect: {incorrectAnswers} | 🏆 Score: {score}</p>
