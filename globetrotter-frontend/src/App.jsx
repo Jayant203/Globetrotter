@@ -9,8 +9,8 @@ const API_URL = "https://globetrotter-production.up.railway.app/api";
 
 function App() {
     const [showIntro, setShowIntro] = useState(true);
-    const [username, setUsername] = useState("");
-    const [isRegistered, setIsRegistered] = useState(false);
+    const [username, setUsername] = useState(localStorage.getItem("username") || "");
+    const [isRegistered, setIsRegistered] = useState(!!username);
     const [gameMode, setGameMode] = useState(null);
     const [clues, setClues] = useState([]);
     const [options, setOptions] = useState([]);
@@ -20,6 +20,7 @@ function App() {
     const [correctCount, setCorrectCount] = useState(0);
     const [incorrectCount, setIncorrectCount] = useState(0);
     const [gameOver, setGameOver] = useState(false);
+    const [inviteLink, setInviteLink] = useState("");
 
     useEffect(() => {
         setTimeout(() => setShowIntro(false), 3000);
@@ -74,6 +75,15 @@ function App() {
         }
     }
 
+    async function challengeFriend() {
+        try {
+            const response = await axios.post(`${API_URL}/challenge`, { username, score });
+            setInviteLink(response.data.inviteLink);
+        } catch (error) {
+            console.error("Challenge error:", error);
+        }
+    }
+
     return (
         <div className="relative w-full h-screen flex flex-col items-center justify-center text-white">
             {/* 🌍 3D Globe Animation */}
@@ -111,7 +121,13 @@ function App() {
                         onChange={(e) => setUsername(e.target.value)}
                         className="p-4 text-lg rounded-lg bg-gray-800 text-white w-full text-center"
                     />
-                    <button onClick={() => setIsRegistered(true)} className="p-4 mt-4 w-full glowing">
+                    <button
+                        onClick={() => {
+                            localStorage.setItem("username", username);
+                            setIsRegistered(true);
+                        }}
+                        className="p-4 mt-4 w-full glowing"
+                    >
                         ✅ Start Game
                     </button>
                 </motion.div>
@@ -126,7 +142,7 @@ function App() {
                     <p className="text-xl">🏆 Final Score: {score}</p>
                     <p>✅ Correct Answers: {correctCount}</p>
                     <p>❌ Incorrect Answers: {incorrectCount}</p>
-                    <button onClick={() => setIsRegistered(false)} className="p-4 mt-4 w-full glowing">
+                    <button onClick={() => startGame("points")} className="p-4 mt-4 w-full glowing">
                         🔄 Restart Game
                     </button>
                 </motion.div>
@@ -144,6 +160,9 @@ function App() {
                     <button onClick={() => startGame("points")} className="p-5 m-4 text-xl w-full glowing">
                         🎯 Points Mode
                     </button>
+                    <button onClick={challengeFriend} className="p-5 m-4 text-xl w-full glowing">
+                        🎉 Challenge a Friend
+                    </button>
                 </motion.div>
             ) : (
                 <motion.div
@@ -152,12 +171,14 @@ function App() {
                     transition={{ duration: 1 }}
                     className="glass text-center w-full max-w-2xl p-6"
                 >
-                    <p className="text-xl mb-4">{clues.join(" / ")}</p>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="p-6 text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl">
+                        {clues.join(" / ")}
+                    </div>
+                    <div className="grid grid-cols-2 gap-6 mt-6">
                         {options.map(option => (
                             <button 
                                 key={option} 
-                                className="p-4 glowing w-full text-lg"
+                                className="p-4 glowing w-full text-lg border-2 border-yellow-400 rounded-lg"
                                 onClick={() => handleAnswer(option)}
                             >
                                 {option}
@@ -165,27 +186,11 @@ function App() {
                         ))}
                     </div>
 
-                    {result && (
-                        <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                            className="mt-6 text-xl font-bold"
-                        >
-                            {result === "✅ Correct!" && <Confetti />}
-                            {result}
-                        </motion.div>
-                    )}
+                    {result && <motion.div className="mt-6 text-xl font-bold">{result === "✅ Correct!" && <Confetti />} {result}</motion.div>}
 
-                    {result && (
-                        <button onClick={fetchDestination} className="p-3 mt-4 bg-blue-500 text-white rounded-lg">
-                            🔄 Next Question
-                        </button>
-                    )}
+                    {result && <button onClick={fetchDestination} className="p-3 mt-4 bg-blue-500 text-white rounded-lg">🔄 Next Question</button>}
 
-                    <button onClick={handleQuit} className="p-3 mt-4 bg-red-500 text-white rounded-lg">
-                        ⏹ Quit Game
-                    </button>
+                    <button onClick={handleQuit} className="p-3 mt-4 bg-red-500 text-white rounded-lg">⏹ Quit Game</button>
                 </motion.div>
             )}
         </div>
