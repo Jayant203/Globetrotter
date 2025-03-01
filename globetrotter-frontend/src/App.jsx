@@ -10,7 +10,7 @@ const API_URL = "https://globetrotter-production.up.railway.app/api";
 function App() {
     const [showIntro, setShowIntro] = useState(true);
     const [username, setUsername] = useState(localStorage.getItem("username") || "");
-    const [isRegistered, setIsRegistered] = useState(false); // ✅ Always start as false
+    const [isRegistered, setIsRegistered] = useState(false);
     const [gameMode, setGameMode] = useState(null);
     const [clues, setClues] = useState([]);
     const [options, setOptions] = useState([]);
@@ -21,10 +21,28 @@ function App() {
     const [incorrectCount, setIncorrectCount] = useState(0);
     const [gameOver, setGameOver] = useState(false);
     const [inviteLink, setInviteLink] = useState("");
+    const [timer, setTimer] = useState(60); // ✅ Timer for 1-minute mode
 
     useEffect(() => {
         setTimeout(() => setShowIntro(false), 3000);
     }, []);
+
+    // ✅ Start timer countdown when gameMode is "timer"
+    useEffect(() => {
+        if (gameMode === "timer") {
+            const interval = setInterval(() => {
+                setTimer(prevTimer => {
+                    if (prevTimer <= 1) {
+                        clearInterval(interval);
+                        setGameOver(true);
+                    }
+                    return prevTimer - 1;
+                });
+            }, 1000);
+
+            return () => clearInterval(interval);
+        }
+    }, [gameMode]);
 
     async function fetchDestination() {
         try {
@@ -44,6 +62,7 @@ function App() {
         setCorrectCount(0);
         setIncorrectCount(0);
         setGameOver(false);
+        setTimer(60); // ✅ Reset timer when game starts
         fetchDestination();
     }
 
@@ -63,13 +82,16 @@ function App() {
 
             if (response.data.correct) {
                 setResult("✅ Correct!");
-                setScore((prev) => prev + 10);
-                setCorrectCount((prev) => prev + 1);
+                setScore(prev => prev + 10);
+                setCorrectCount(prev => prev + 1);
             } else {
                 setResult("❌ Incorrect!");
-                setScore((prev) => prev - 5);
-                setIncorrectCount((prev) => prev + 1);
+                setScore(prev => prev - 5);
+                setIncorrectCount(prev => prev + 1);
             }
+
+            // ✅ Auto-fetch next question after answering
+            setTimeout(fetchDestination, 1000);
         } catch (error) {
             console.error("Error verifying answer", error);
         }
@@ -123,7 +145,7 @@ function App() {
                     />
                     <button
                         onClick={() => {
-                            if (username.trim() !== "") { // ✅ Ensuring valid username
+                            if (username.trim() !== "") {
                                 localStorage.setItem("username", username);
                                 setIsRegistered(true);
                             } else {
@@ -175,26 +197,13 @@ function App() {
                     transition={{ duration: 1 }}
                     className="glass text-center w-full max-w-2xl p-6"
                 >
+                    {/* ✅ Timer display for 1-minute mode */}
+                    {gameMode === "timer" && !gameOver && (
+                        <p className="absolute top-4 right-4 text-2xl font-bold">⏳ {timer}s</p>
+                    )}
                     <div className="p-6 text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl">
                         {clues.join(" / ")}
                     </div>
-                    <div className="grid grid-cols-2 gap-6 mt-6">
-                        {options.map(option => (
-                            <button 
-                                key={option} 
-                                className="p-4 glowing w-full text-lg border-2 border-yellow-400 rounded-lg"
-                                onClick={() => handleAnswer(option)}
-                            >
-                                {option}
-                            </button>
-                        ))}
-                    </div>
-
-                    {result && <motion.div className="mt-6 text-xl font-bold">{result === "✅ Correct!" && <Confetti />} {result}</motion.div>}
-
-                    {result && <button onClick={fetchDestination} className="p-3 mt-4 bg-blue-500 text-white rounded-lg">🔄 Next Question</button>}
-
-                    <button onClick={handleQuit} className="p-3 mt-4 bg-red-500 text-white rounded-lg">⏹ Quit Game</button>
                 </motion.div>
             )}
         </div>

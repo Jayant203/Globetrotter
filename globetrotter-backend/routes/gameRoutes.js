@@ -2,10 +2,9 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 const GameSession = require("../models/GameSession");
-const Destination = require("../models/Destination");
 const crypto = require("crypto");
 
-const FRONTEND_URL = "https://mellow-magic-production.up.railway.app"; // Change this to your frontend URL
+const FRONTEND_URL = "https://mellow-magic-production.up.railway.app"; // ✅ Ensure correct frontend URL
 
 // ✅ Ensure user is registered before inviting
 router.post("/challenge", async (req, res) => {
@@ -28,8 +27,8 @@ router.post("/challenge", async (req, res) => {
         });
         await gameSession.save();
 
-        // Send the correct dynamic invite link
-        res.json({ inviteLink: `${FRONTEND_URL}/?invite=${inviteCode}` });
+        // ✅ FIX: Ensure correct path
+        res.json({ inviteLink: `${FRONTEND_URL}/game/${inviteCode}` });
 
     } catch (error) {
         console.error("Challenge error:", error);
@@ -38,7 +37,7 @@ router.post("/challenge", async (req, res) => {
 });
 
 // ✅ Retrieve game session details using invite link
-router.get("/:inviteCode", async (req, res) => {
+router.get("/game/:inviteCode", async (req, res) => {
     const { inviteCode } = req.params;
 
     try {
@@ -56,5 +55,4 @@ router.get("/:inviteCode", async (req, res) => {
     }
 });
 
-// ✅ Fix: Ensure Proper Export
 module.exports = router;
