@@ -16,6 +16,10 @@ function App() {
     const [options, setOptions] = useState([]);
     const [correctAnswer, setCorrectAnswer] = useState("");
     const [result, setResult] = useState(null);
+    const [score, setScore] = useState(0);
+    const [correctCount, setCorrectCount] = useState(0);
+    const [incorrectCount, setIncorrectCount] = useState(0);
+    const [gameOver, setGameOver] = useState(false);
 
     useEffect(() => {
         setTimeout(() => setShowIntro(false), 3000);
@@ -35,7 +39,39 @@ function App() {
 
     function startGame(mode) {
         setGameMode(mode);
-        fetchDestination(); // ✅ Fetch the first question after selecting mode
+        setScore(0);
+        setCorrectCount(0);
+        setIncorrectCount(0);
+        setGameOver(false);
+        fetchDestination();
+    }
+
+    function handleQuit() {
+        setGameOver(true);
+        setGameMode(null);
+    }
+
+    async function handleAnswer(selectedOption) {
+        if (result) return;
+
+        try {
+            const response = await axios.post(`${API_URL}/destination/verify`, {
+                answer: selectedOption,
+                correctAnswer: correctAnswer,
+            });
+
+            if (response.data.correct) {
+                setResult("✅ Correct!");
+                setScore((prev) => prev + 10);
+                setCorrectCount((prev) => prev + 1);
+            } else {
+                setResult("❌ Incorrect!");
+                setScore((prev) => prev - 5);
+                setIncorrectCount((prev) => prev + 1);
+            }
+        } catch (error) {
+            console.error("Error verifying answer", error);
+        }
     }
 
     return (
@@ -79,6 +115,21 @@ function App() {
                         ✅ Start Game
                     </button>
                 </motion.div>
+            ) : gameOver ? (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1 }}
+                    className="glass flex flex-col items-center text-center p-6 w-96"
+                >
+                    <h1 className="text-4xl font-bold text-white mb-4">Game Over 🎮</h1>
+                    <p className="text-xl">🏆 Final Score: {score}</p>
+                    <p>✅ Correct Answers: {correctCount}</p>
+                    <p>❌ Incorrect Answers: {incorrectCount}</p>
+                    <button onClick={() => setIsRegistered(false)} className="p-4 mt-4 w-full glowing">
+                        🔄 Restart Game
+                    </button>
+                </motion.div>
             ) : !gameMode ? (
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -104,11 +155,37 @@ function App() {
                     <p className="text-xl mb-4">{clues.join(" / ")}</p>
                     <div className="grid grid-cols-2 gap-6">
                         {options.map(option => (
-                            <button key={option} className="p-4 glowing w-full text-lg">
+                            <button 
+                                key={option} 
+                                className="p-4 glowing w-full text-lg"
+                                onClick={() => handleAnswer(option)}
+                            >
                                 {option}
                             </button>
                         ))}
                     </div>
+
+                    {result && (
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                            className="mt-6 text-xl font-bold"
+                        >
+                            {result === "✅ Correct!" && <Confetti />}
+                            {result}
+                        </motion.div>
+                    )}
+
+                    {result && (
+                        <button onClick={fetchDestination} className="p-3 mt-4 bg-blue-500 text-white rounded-lg">
+                            🔄 Next Question
+                        </button>
+                    )}
+
+                    <button onClick={handleQuit} className="p-3 mt-4 bg-red-500 text-white rounded-lg">
+                        ⏹ Quit Game
+                    </button>
                 </motion.div>
             )}
         </div>
