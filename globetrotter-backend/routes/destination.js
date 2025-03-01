@@ -39,18 +39,21 @@ router.post("/verify", async (req, res) => {
 
 // ✅ Generate Random Unique Options
 async function getRandomOptions(correctAnswer) {
-    let options = await Destination.aggregate([
+    let incorrectOptions = await Destination.aggregate([
         { $match: { name: { $ne: correctAnswer } } }, // Exclude correct answer
-        { $sample: { size: 3 } } // Get 3 random incorrect options
+        { $sample: { size: 5 } } // Get more than needed to account for duplicates
     ]).exec();
+
+    let optionSet = new Set(incorrectOptions.map(dest => dest.name));
     
-    options = new Set(options.map(dest => dest.name)); // Ensure uniqueness
-    options.add(correctAnswer); // Add correct answer
+    // Ensure we have exactly 3 incorrect answers
+    let options = Array.from(optionSet).slice(0, 3);
     
-    // Convert back to an array and ensure exactly 4 options
-    options = Array.from(options).slice(0, 4);
+    // Add correct answer
+    options.push(correctAnswer);
     
-    return options.sort(() => Math.random() - 0.5); // Shuffle options
+    // Shuffle
+    return options.sort(() => Math.random() - 0.5);
 }
 
 module.exports = router;
