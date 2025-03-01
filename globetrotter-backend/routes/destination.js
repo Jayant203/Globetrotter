@@ -37,12 +37,16 @@ router.post("/verify", async (req, res) => {
     }
 });
 
-// ✅ Generate Random Options
+// ✅ Generate Random Unique Options
 async function getRandomOptions(correctAnswer) {
-    let options = await Destination.aggregate([{ $sample: { size: 3 } }]).exec();
+    let options = await Destination.aggregate([
+        { $match: { name: { $ne: correctAnswer } } }, // Exclude correct answer
+        { $sample: { size: 3 } } // Get 3 random incorrect options
+    ]).exec();
+    
     options = options.map(dest => dest.name);
-    options.push(correctAnswer);
-    return options.sort(() => Math.random() - 0.5);
+    options.push(correctAnswer); // Add correct answer
+    return options.sort(() => Math.random() - 0.5); // Shuffle options
 }
 
 module.exports = router;
