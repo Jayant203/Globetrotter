@@ -6,23 +6,23 @@ const Destination = require("../models/Destination");
 const crypto = require("crypto");
 
 // ✅ Register user
-router.post("/register", async (req, res) => {
-    const { username } = req.body;
+// router.post("/register", async (req, res) => {
+//     const { username } = req.body;
 
-    try {
-        let user = await User.findOne({ username });
+//     try {
+//         let user = await User.findOne({ username });
 
-        if (!user) {
-            user = new User({ username });
-            await user.save();
-        }
+//         if (!user) {
+//             user = new User({ username });
+//             await user.save();
+//         }
 
-        res.json({ message: "User registered!", user });
-    } catch (error) {
-        console.error("Registration error:", error);
-        res.status(500).json({ error: "Server error" });
-    }
-});
+//         res.json({ message: "User registered!", user });
+//     } catch (error) {
+//         console.error("Registration error:", error);
+//         res.status(500).json({ error: "Server error" });
+//     }
+// });
 
 // ✅ Create a challenge link
 router.post("/challenge", async (req, res) => {
@@ -43,6 +43,8 @@ router.post("/challenge", async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+
+
 
 // ✅ Retrieve game session via invite link
 router.get("/game/:inviteCode", async (req, res) => {
