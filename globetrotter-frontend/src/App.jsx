@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stars, Sphere } from "@react-three/drei";
 import Confetti from "react-confetti";
+import QRCode from "react-qr-code"; // ✅ Added for QR Code Generation
 
 const API_URL = "https://globetrotter-production.up.railway.app/api";
 
@@ -21,6 +22,7 @@ function App() {
     const [incorrectCount, setIncorrectCount] = useState(0);
     const [gameOver, setGameOver] = useState(false);
     const [inviteLink, setInviteLink] = useState("");
+    const [invitePopup, setInvitePopup] = useState(false);
     const [timer, setTimer] = useState(60);
     const [questionLoaded, setQuestionLoaded] = useState(false);
 
@@ -28,40 +30,22 @@ function App() {
         setTimeout(() => setShowIntro(false), 3000);
     }, []);
 
-    // ✅ Timer only starts after the question loads
-    useEffect(() => {
-        if (gameMode === "timer" && questionLoaded) {
-            const interval = setInterval(() => {
-                setTimer(prevTimer => {
-                    if (prevTimer <= 1) {
-                        clearInterval(interval);
-                        setGameOver(true);
-                        setGameMode(null); // ✅ Redirect to mode selection after quitting
-                    }
-                    return prevTimer - 1;
-                });
-            }, 1000);
-
-            return () => clearInterval(interval);
-        }
-    }, [gameMode, questionLoaded]);
-
     async function fetchDestination() {
         try {
-            setQuestionLoaded(false); // ✅ Prevents buttons from appearing before question loads
+            setQuestionLoaded(false);
             const response = await axios.get(`${API_URL}/destination/random`);
             setClues(response.data.clues);
             setOptions(response.data.options);
             setCorrectAnswer(response.data.name);
             setResult(null);
-            setQuestionLoaded(true); // ✅ Ensures question is ready before showing buttons
+            setQuestionLoaded(true);
         } catch (error) {
             console.error("Error fetching destination", error);
         }
     }
 
     function startGame(mode) {
-        setGameMode(null); // ✅ Ensures proper mode reset
+        setGameMode(null);
         setTimeout(() => {
             setGameMode(mode);
             setScore(0);
@@ -70,7 +54,7 @@ function App() {
             setGameOver(false);
             setTimer(60);
             fetchDestination();
-        }, 500); // ✅ Small delay ensures smooth transition
+        }, 500);
     }
 
     function handleQuit() {
@@ -97,7 +81,6 @@ function App() {
                 setIncorrectCount(prev => prev + 1);
             }
 
-            // ✅ Faster transition to next question
             setTimeout(fetchDestination, gameMode === "timer" ? 600 : 1000);
         } catch (error) {
             console.error("Error verifying answer", error);
@@ -105,12 +88,24 @@ function App() {
     }
 
     async function challengeFriend() {
+        if (!username.trim()) {
+            alert("Please enter a username first!");
+            return;
+        }
+
         try {
             const response = await axios.post(`${API_URL}/game/challenge`, { username, score });
-            setInviteLink(response.data.inviteLink);
+            const link = response.data.inviteLink;
+            setInviteLink(link);
+            setInvitePopup(true); // ✅ Open the invite popup
         } catch (error) {
             console.error("Challenge error:", error);
         }
+    }
+
+    function copyInviteLink() {
+        navigator.clipboard.writeText(inviteLink);
+        alert("Invite link copied! Share it with your friends.");
     }
 
     return (
@@ -126,12 +121,7 @@ function App() {
                             <meshStandardMaterial color="blue" />
                         </Sphere>
                     </Canvas>
-                    <motion.h1
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1 }}
-                        className="absolute text-6xl font-extrabold"
-                    >
+                    <motion.h1 initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} className="absolute text-6xl font-extrabold">
                         🌍 Globetrotter Challenge
                     </motion.h1>
                 </div>
@@ -158,16 +148,6 @@ function App() {
                         ✅ Start Game
                     </button>
                 </motion.div>
-            ) : gameOver ? (
-                <motion.div className="glass flex flex-col items-center text-center p-6 w-96">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">Game Over 🎮</h1>
-                    <p className="text-xl">🏆 Final Score: {score}</p>
-                    <p>✅ Correct Answers: {correctCount}</p>
-                    <p>❌ Incorrect Answers: {incorrectCount}</p>
-                    <button onClick={() => startGame("points")} className="restart-button">
-                        🔄 Restart Game
-                    </button>
-                </motion.div>
             ) : !gameMode ? (
                 <motion.div className="glass flex flex-col items-center text-center p-6 w-96">
                     <h1 className="text-5xl font-extrabold mb-6 text-gray-900">Choose Mode</h1>
@@ -183,10 +163,6 @@ function App() {
                 </motion.div>
             ) : (
                 <motion.div className="glass text-center w-full max-w-2xl p-6">
-                    {questionLoaded && gameMode === "timer" && (
-                        <p className="absolute top-4 right-4 text-2xl font-bold">⏳ {timer}s</p>
-                    )}
-
                     <div className="question-box">{clues.join(" / ")}</div>
 
                     {questionLoaded && (
@@ -210,6 +186,20 @@ function App() {
                         </>
                     )}
                 </motion.div>
+            )}
+
+            {/* ✅ Invite Friend Popup */}
+            {invitePopup && (
+                <div className="invite-popup fixed inset-0 flex items-center justify-center bg-black bg-opacity-80">
+                    <div className="bg-white p-6 rounded-lg text-center">
+                        <h2 className="text-2xl font-bold">🎉 Invite Your Friend!</h2>
+                        <p className="mt-2">Send this link to your friend:</p>
+                        <input type="text" value={inviteLink} readOnly className="p-2 mt-2 w-full border rounded" />
+                        <button onClick={copyInviteLink} className="mt-4 glowing">📋 Copy Link</button>
+                        <QRCode value={inviteLink} className="mt-4 mx-auto" />
+                        <button onClick={() => setInvitePopup(false)} className="quit-button mt-4">❌ Close</button>
+                    </div>
+                </div>
             )}
         </div>
     );
