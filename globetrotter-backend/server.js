@@ -1,58 +1,59 @@
+require("dotenv").config();
 const express = require("express");
-const router = express.Router();
-const User = require("./models/User");
-const GameSession = require("./models/GameSession");
-const crypto = require("crypto");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const path = require("path");
 
-const FRONTEND_URL = "https://mellow-magic-production.up.railway.app"; // ✅ Ensure correct frontend URL
+const app = express();
 
-// ✅ Ensure user is registered before inviting
-router.post("/challenge", async (req, res) => {
-    const { username, score } = req.body;
+// ✅ Allowed Origins for CORS (Change this to match your frontend URL)
+const allowedOrigins = [
+    "https://mellow-magic-production.up.railway.app", // Deployed Frontend
+    "http://localhost:5173"  // Local Dev Environment
+];
 
-    try {
-        let user = await User.findOne({ username });
-        if (!user) {
-            return res.status(404).json({ error: "User not registered!" });
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("❌ Not allowed by CORS"));
         }
-
-        // Generate unique invite code
-        const inviteCode = crypto.randomBytes(4).toString("hex");
-
-        // Save game session
-        const gameSession = new GameSession({
-            inviter: user._id,
-            score,
-            inviteCode
-        });
-        await gameSession.save();
-
-        // ✅ FIX: Ensure correct path
-        res.json({ inviteLink: `${FRONTEND_URL}/game/${inviteCode}` });
-
-    } catch (error) {
-        console.error("Challenge error:", error);
-        res.status(500).json({ error: "Server error" });
     }
+}));
+
+app.use(express.json());
+
+// ✅ Ensure All Responses Include CORS Headers
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
 });
 
-// ✅ Retrieve game session details using invite link
-router.get("/game/:inviteCode", async (req, res) => {
-    const { inviteCode } = req.params;
+// ✅ MongoDB Connection
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log("✅ MongoDB Connected"))
+    .catch(err => console.error("❌ MongoDB Connection Error:", err));
 
-    try {
-        const session = await GameSession.findOne({ inviteCode }).populate("inviter");
-        if (!session) return res.status(404).json({ error: "Invalid invite link" });
+// ✅ Routes
+app.use("/api/destination", require("./routes/destination"));
+app.use("/api", require("./routes/api"));
 
-        res.json({
-            inviter: session.inviter.username,
-            score: session.score
-        });
+// ✅ Fix: Use gameRoutes correctly
+const gameRoutes = require("./routes/gameRoutes");
+app.use("/api/game", gameRoutes);
 
-    } catch (error) {
-        console.error("Game session error:", error);
-        res.status(500).json({ error: "Server error" });
-    }
-});
+// ✅ Serve Frontend in Production Mode
+if (process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, "client", "build")));
 
-module.exports = router;
+    app.get("*", (req, res) => {
+        res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+    });
+}
+
+// ✅ Start Server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
