@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stars } from "@react-three/drei";
+import { OrbitControls, Stars, Sphere } from "@react-three/drei"; // ✅ Added Sphere back
 import Confetti from "react-confetti";
 import QRCode from "react-qr-code";
 
@@ -31,7 +31,6 @@ function App() {
     useEffect(() => {
         setTimeout(() => setShowIntro(false), 3000);
 
-        // ✅ If user is coming from an invite link, fetch inviter details
         const urlParams = new URLSearchParams(window.location.search);
         const inviteCode = urlParams.get("invite");
 
@@ -52,7 +51,7 @@ function App() {
                 setTimer(prev => prev - 1);
             }, 1000);
         } else if (timer === 0) {
-            endGame();
+            handleQuit(); // ✅ Call handleQuit when timer reaches zero
         }
         return () => clearInterval(countdown);
     }, [gameMode, timer]);
@@ -74,12 +73,12 @@ function App() {
     function startGame(mode) {
         setGameMode(null);
         setInvitePopup(false);
+        setGameOver(false); // ✅ Ensure leaderboard resets when game starts
         setTimeout(() => {
             setGameMode(mode);
             setScore(0);
             setCorrectCount(0);
             setIncorrectCount(0);
-            setGameOver(false);
             setTimer(60);
             fetchDestination();
         }, 500);
@@ -115,37 +114,44 @@ function App() {
         }
     }
 
-    async function challengeFriend() {
-        if (!username.trim()) {
-            alert("Please enter a username first!");
-            return;
-        }
-
-        try {
-            const response = await axios.post(`${API_URL}/game/challenge`, { username, score });
-            setInviteLink(response.data.inviteLink);
-            setInvitePopup(true);
-        } catch (error) {
-            console.error("Challenge error:", error);
-        }
-    }
-
-    function copyInviteLink() {
-        navigator.clipboard.writeText(inviteLink);
-        alert("Invite link copied! Share it with your friends.");
-    }
-
     return (
         <div className="relative w-full h-screen flex flex-col items-center justify-center bg-gray-200 text-gray-900">
             {showIntro ? (
-                <motion.h1 className="text-6xl font-extrabold">🌍 Globetrotter Challenge</motion.h1>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <Canvas>
+                        <OrbitControls enableZoom={false} />
+                        <Stars />
+                        <ambientLight intensity={0.5} />
+                        <directionalLight position={[2, 5, 2]} intensity={1} />
+                        <Sphere args={[1.5, 32, 32]} position={[0, 0, 0]}>
+                            <meshStandardMaterial color="blue" />
+                        </Sphere>
+                    </Canvas>
+                    <motion.h1 
+                        initial={{ opacity: 0, scale: 0.5 }} 
+                        animate={{ opacity: 1, scale: 1 }} 
+                        transition={{ duration: 1 }} 
+                        className="absolute text-6xl font-extrabold"
+                    >
+                        🌍 Globetrotter Challenge
+                    </motion.h1>
+                </div>
+            ) : gameOver ? (
+                <motion.div className="glass flex flex-col items-center text-center p-6 w-96">
+                    <h1 className="text-5xl font-extrabold mb-4">Game Over 🎮</h1>
+                    <p className="text-xl">✅ Correct: {correctCount} | ❌ Incorrect: {incorrectCount}</p>
+                    <p className="text-xl font-bold">🏆 Final Score: {score}</p>
+                    <button onClick={() => setGameOver(false)} className="restart-button">
+                        🔄 Play Again
+                    </button>
+                </motion.div>
             ) : !isRegistered ? (
                 <motion.div className="glass flex flex-col items-center text-center w-96">
                     <h2 className="text-2xl font-bold mb-2">Let's start with the trivia!</h2>
                     
                     {inviter && inviterScore !== null && (
                         <p className="text-lg text-gray-700 mb-4">
-                            {inviter} has invited you! Their score is <strong>{inviterScore}</strong>.
+                            <strong>{inviter}</strong> has invited you! Their score is <strong>{inviterScore}</strong>.
                         </p>
                     )}
                     
@@ -170,53 +176,16 @@ function App() {
                         ✅ Start Game
                     </button>
                 </motion.div>
-            ) : !gameMode ? (
-                <motion.div className="glass flex flex-col items-center text-center p-6 w-96">
-                    <h1 className="text-5xl font-extrabold mb-6">Choose Mode</h1>
-                    <button onClick={() => startGame("timer")} className="glowing">
-                        ⏳ 1-Min Timer Mode
-                    </button>
-                    <button onClick={() => startGame("points")} className="glowing">
-                        🎯 Points Mode
-                    </button>
-                    <button onClick={challengeFriend} className="glowing">
-                        🎉 Challenge a Friend
-                    </button>
-                </motion.div>
-            ) : (
-                <motion.div className="glass text-center w-full max-w-2xl p-6">
-                    {gameMode === "timer" && <p className="text-xl font-bold">⏳ Time Left: {timer}s</p>}
+            ) : null}
 
-                    <div className="question-box">{clues.join(" / ")}</div>
-
-                    {questionLoaded && (
-                        <div className="button-container mt-6">
-                            {options.map(option => (
-                                <button key={option} className="glowing" onClick={() => handleAnswer(option)}>
-                                    {option}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-
-                    {result && <motion.div className="mt-6 text-xl font-bold">{result}</motion.div>}
-                    {result && result.includes("✅") && <Confetti />}
-
-                    {gameOver && (
-                        <div className="mt-6">
-                            <p>✅ Correct: {correctCount} | ❌ Incorrect: {incorrectCount} | 🏆 Score: {score}</p>
-                        </div>
-                    )}
-
-                    <button onClick={handleQuit} className="quit-button mt-4">⏹ Quit Game</button>
-                </motion.div>
-            )}
-
-            {invitePopup && inviteLink && (
+            {invitePopup && (
                 <div className="invite-popup fixed inset-0 flex items-center justify-center bg-black bg-opacity-80">
                     <div className="bg-white p-6 rounded-lg text-center">
+                        <h2 className="text-2xl font-bold">🎉 Invite Your Friend!</h2>
                         <QRCode value={inviteLink} className="mt-4 mx-auto" />
-                        <button onClick={copyInviteLink} className="mt-4 glowing">📋 Copy Link</button>
+                        <button onClick={() => navigator.clipboard.writeText(inviteLink)} className="mt-4 glowing">
+                            📋 Copy Link
+                        </button>
                         <button onClick={() => setInvitePopup(false)} className="quit-button mt-4">❌ Close</button>
                     </div>
                 </div>
