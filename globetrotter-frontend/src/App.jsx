@@ -45,6 +45,22 @@ function App() {
         }
     }, []);
 
+        // ✅ Timer for 1-Min Timer Mode
+    useEffect(() => {
+        if (gameMode === "timer" && timer > 0) {
+            const countdown = setInterval(() => {
+                setTimer(prevTimer => {
+                    if (prevTimer === 1) {
+                        clearInterval(countdown);
+                        handleQuit(); // ✅ Auto-end game when timer hits 0
+                    }
+                    return prevTimer - 1;
+                });
+            }, 1000);
+            return () => clearInterval(countdown);
+        }
+    }, [gameMode, timer]);
+
     async function fetchDestination() {
         try {
             setQuestionLoaded(false);
@@ -125,7 +141,6 @@ function App() {
             alert("Error inviting friend. Please try again.");
         }
     }
-    
 
     function copyInviteLink() {
         navigator.clipboard.writeText(inviteLink);
@@ -136,13 +151,22 @@ function App() {
         <div className="relative w-full h-screen flex flex-col items-center justify-center bg-gray-200 text-gray-900">
             {showIntro ? (
                 <motion.h1 className="text-6xl font-extrabold">🌍 Globetrotter Challenge</motion.h1>
+            ) : gameOver ? (
+                <motion.div className="glass flex flex-col items-center text-center p-6 w-96">
+                    <h1 className="text-5xl font-extrabold mb-4">Game Over 🎮</h1>
+                    <p className="text-xl">✅ Correct: {correctCount} | ❌ Incorrect: {incorrectCount}</p>
+                    <p className="text-xl font-bold">🏆 Final Score: {score}</p>
+                    <button onClick={() => setGameOver(false)} className="restart-button">
+                        🔄 Play Again
+                    </button>
+                </motion.div>
             ) : !isRegistered ? (
                 <motion.div className="glass flex flex-col items-center text-center w-96">
                     <h2 className="text-2xl font-bold mb-2">Let's start with the trivia!</h2>
                     
                     {inviter && inviterScore !== null && (
                         <p className="text-lg text-gray-700 mb-4">
-                            {inviter} has invited you! Their score is <strong>{inviterScore}</strong>.
+                            <strong>{inviter}</strong> has invited you! Their score is <strong>{inviterScore}</strong>.
                         </p>
                     )}
                     
@@ -182,6 +206,7 @@ function App() {
                 </motion.div>
             ) : (
                 <motion.div className="glass text-center w-full max-w-2xl p-6">
+                    {gameMode === "timer" && <p className="text-xl font-bold">⏳ Time Left: {timer}s</p>}
                     <div className="question-box">{clues.join(" / ")}</div>
 
                     {questionLoaded && (
@@ -200,7 +225,7 @@ function App() {
                     {questionLoaded && (
                         <>
                             <button onClick={fetchDestination} className="restart-button">🔄 Next Question</button>
-                            <button onClick={handleQuit} className="quit-button">⏹ Quit Game</button>
+                            <button onClick={handleQuit} className="quit-button mt-4">⏹ Quit Game</button>
                         </>
                     )}
                 </motion.div>
