@@ -21,13 +21,13 @@ function App() {
     const [incorrectCount, setIncorrectCount] = useState(0);
     const [gameOver, setGameOver] = useState(false);
     const [inviteLink, setInviteLink] = useState("");
-    const [timer, setTimer] = useState(60); // ✅ Timer for 1-minute mode
+    const [timer, setTimer] = useState(60);
 
     useEffect(() => {
         setTimeout(() => setShowIntro(false), 3000);
     }, []);
 
-    // ✅ Start timer countdown when gameMode is "timer"
+    // ✅ Start countdown timer when "timer" mode is selected
     useEffect(() => {
         if (gameMode === "timer") {
             const interval = setInterval(() => {
@@ -62,7 +62,7 @@ function App() {
         setCorrectCount(0);
         setIncorrectCount(0);
         setGameOver(false);
-        setTimer(60); // ✅ Reset timer when game starts
+        setTimer(60); // ✅ Reset timer
         fetchDestination();
     }
 
@@ -90,7 +90,7 @@ function App() {
                 setIncorrectCount(prev => prev + 1);
             }
 
-            // ✅ Auto-fetch next question after answering (Only for Timer Mode)
+            // ✅ Auto-fetch next question after answering (Only in Timer Mode)
             if (gameMode === "timer") {
                 setTimeout(fetchDestination, 1000);
             }
@@ -110,7 +110,6 @@ function App() {
 
     return (
         <div className="relative w-full h-screen flex flex-col items-center justify-center text-white">
-            {/* 🌍 3D Globe Animation */}
             {showIntro ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                     <Canvas>
@@ -160,52 +159,58 @@ function App() {
                     </button>
                 </motion.div>
             ) : gameOver ? (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 1 }}
-                    className="glass flex flex-col items-center text-center p-6 w-96"
-                >
+                <motion.div className="glass flex flex-col items-center text-center p-6 w-96">
                     <h1 className="text-4xl font-bold text-white mb-4">Game Over 🎮</h1>
                     <p className="text-xl">🏆 Final Score: {score}</p>
                     <p>✅ Correct Answers: {correctCount}</p>
                     <p>❌ Incorrect Answers: {incorrectCount}</p>
-                    <button onClick={() => startGame("points")} className="p-4 mt-4 w-full glowing">
+                    <button onClick={() => startGame("points")} className="restart-button">
                         🔄 Restart Game
                     </button>
                 </motion.div>
             ) : !gameMode ? (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 1 }}
-                    className="glass flex flex-col items-center text-center p-6 w-96"
-                >
+                <motion.div className="glass flex flex-col items-center text-center p-6 w-96">
                     <h1 className="text-5xl font-extrabold mb-6 text-white">Choose Mode</h1>
-                    <button onClick={() => startGame("timer")} className="p-5 m-4 text-xl w-full glowing">
+                    <button onClick={() => startGame("timer")} className="glowing">
                         ⏳ 1-Min Timer Mode
                     </button>
-                    <button onClick={() => startGame("points")} className="p-5 m-4 text-xl w-full glowing">
+                    <button onClick={() => startGame("points")} className="glowing">
                         🎯 Points Mode
                     </button>
-                    <button onClick={challengeFriend} className="p-5 m-4 text-xl w-full glowing">
+                    <button onClick={challengeFriend} className="glowing">
                         🎉 Challenge a Friend
                     </button>
                 </motion.div>
             ) : (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 1 }}
-                    className="glass text-center w-full max-w-2xl p-6"
-                >
-                    {/* ✅ Timer display for 1-minute mode */}
+                <motion.div className="glass text-center w-full max-w-2xl p-6">
                     {gameMode === "timer" && !gameOver && (
                         <p className="absolute top-4 right-4 text-2xl font-bold">⏳ {timer}s</p>
                     )}
-                    <div className="p-6 text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl">
+                    <div className="question-box">
                         {clues.join(" / ")}
                     </div>
+
+                    {/* ✅ Display Options */}
+                    <div className="button-container mt-6">
+                        {options.map(option => (
+                            <button 
+                                key={option} 
+                                className="glowing"
+                                onClick={() => handleAnswer(option)}
+                            >
+                                {option}
+                            </button>
+                        ))}
+                    </div>
+
+                    {result && <motion.div className="mt-6 text-xl font-bold">{result}</motion.div>}
+
+                    <button onClick={fetchDestination} className="restart-button">
+                        🔄 Next Question
+                    </button>
+                    <button onClick={handleQuit} className="quit-button">
+                        ⏹ Quit Game
+                    </button>
                 </motion.div>
             )}
         </div>
