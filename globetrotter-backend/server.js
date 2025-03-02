@@ -37,13 +37,14 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
     .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => console.error("❌ MongoDB Connection Error:", err));
 
+// ✅ Fix: Use gameRoutes correctly
+const gameRoutes = require("./routes/gameRoutes");
+app.use("/api/game", gameRoutes);
+
 // ✅ Routes
 app.use("/api/destination", require("./routes/destination"));
 app.use("/api", require("./routes/api"));
 
-// ✅ Fix: Use gameRoutes correctly
-const gameRoutes = require("./routes/gameRoutes");
-app.use("/api/game", gameRoutes);
 
 // ✅ Serve Frontend in Production Mode
 if (process.env.NODE_ENV === "production") {
@@ -57,3 +58,4 @@ if (process.env.NODE_ENV === "production") {
 // ✅ Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
