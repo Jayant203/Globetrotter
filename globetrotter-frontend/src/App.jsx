@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stars, Sphere } from "@react-three/drei";
+import { OrbitControls, Stars } from "@react-three/drei";
 import Confetti from "react-confetti";
 import QRCode from "react-qr-code";
 
@@ -31,7 +31,7 @@ function App() {
     useEffect(() => {
         setTimeout(() => setShowIntro(false), 3000);
 
-        // ✅ Fetch inviter details if user comes via invite link
+        // ✅ If user is coming from an invite link, fetch inviter details
         const urlParams = new URLSearchParams(window.location.search);
         const inviteCode = urlParams.get("invite");
 
@@ -126,32 +126,14 @@ function App() {
     return (
         <div className="relative w-full h-screen flex flex-col items-center justify-center bg-gray-200 text-gray-900">
             {showIntro ? (
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <Canvas>
-                        <OrbitControls enableZoom={false} />
-                        <Stars />
-                        <ambientLight intensity={0.5} />
-                        <directionalLight position={[2, 5, 2]} intensity={1} />
-                        <Sphere args={[1.5, 32, 32]}>
-                            <meshStandardMaterial color="blue" />
-                        </Sphere>
-                    </Canvas>
-                    <motion.h1 
-                        initial={{ opacity: 0, scale: 0.5 }} 
-                        animate={{ opacity: 1, scale: 1 }} 
-                        transition={{ duration: 1 }} 
-                        className="absolute text-6xl font-extrabold"
-                    >
-                        🌍 Globetrotter Challenge
-                    </motion.h1>
-                </div>
+                <motion.h1 className="text-6xl font-extrabold">🌍 Globetrotter Challenge</motion.h1>
             ) : !isRegistered ? (
                 <motion.div className="glass flex flex-col items-center text-center w-96">
                     <h2 className="text-2xl font-bold mb-2">Let's start with the trivia!</h2>
                     
                     {inviter && inviterScore !== null && (
                         <p className="text-lg text-gray-700 mb-4">
-                            <strong>{inviter}</strong> has invited you! Their score is <strong>{inviterScore}</strong>.
+                            {inviter} has invited you! Their score is <strong>{inviterScore}</strong>.
                         </p>
                     )}
                     
@@ -176,7 +158,44 @@ function App() {
                         ✅ Start Game
                     </button>
                 </motion.div>
-            ) : null}
+            ) : !gameMode ? (
+                <motion.div className="glass flex flex-col items-center text-center p-6 w-96">
+                    <h1 className="text-5xl font-extrabold mb-6">Choose Mode</h1>
+                    <button onClick={() => startGame("timer")} className="glowing">
+                        ⏳ 1-Min Timer Mode
+                    </button>
+                    <button onClick={() => startGame("points")} className="glowing">
+                        🎯 Points Mode
+                    </button>
+                    <button onClick={challengeFriend} className="glowing">
+                        🎉 Challenge a Friend
+                    </button>
+                </motion.div>
+            ) : (
+                <motion.div className="glass text-center w-full max-w-2xl p-6">
+                    <div className="question-box">{clues.join(" / ")}</div>
+
+                    {questionLoaded && (
+                        <div className="button-container mt-6">
+                            {options.map(option => (
+                                <button key={option} className="glowing" onClick={() => handleAnswer(option)}>
+                                    {option}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {result && <motion.div className="mt-6 text-xl font-bold">{result}</motion.div>}
+                    {result && result.includes("✅") && <Confetti />}
+
+                    {questionLoaded && (
+                        <>
+                            <button onClick={fetchDestination} className="restart-button">🔄 Next Question</button>
+                            <button onClick={handleQuit} className="quit-button">⏹ Quit Game</button>
+                        </>
+                    )}
+                </motion.div>
+            )}
 
             {invitePopup && (
                 <div className="invite-popup fixed inset-0 flex items-center justify-center bg-black bg-opacity-80">
