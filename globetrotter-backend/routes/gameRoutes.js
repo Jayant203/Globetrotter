@@ -41,15 +41,21 @@ router.post("/challenge", async (req, res) => {
 
 
 // ✅ Retrieve game session details using invite link
-router.get("/game/:inviteCode", async (req, res) => {
+router.get("/:inviteCode", async (req, res) => {
     const { inviteCode } = req.params;
 
     try {
-        const session = await GameSession.findOne({ inviteCode }).populate("inviter");
-        if (!session) return res.status(404).json({ error: "Invalid invite link" });
+        const session = await GameSession.findOne({ inviteCode }).populate({
+            path: "inviter",
+            select: "username" // ✅ Fetch only inviter's username
+        });
+
+        if (!session) {
+            return res.status(404).json({ error: "Invalid invite link" });
+        }
 
         res.json({
-            inviter: session.inviter.username,
+            inviter: session.inviter ? session.inviter.username : "Unknown", // ✅ Fix: Ensure inviter exists
             score: session.score
         });
 
@@ -58,5 +64,6 @@ router.get("/game/:inviteCode", async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+
 
 module.exports = router;

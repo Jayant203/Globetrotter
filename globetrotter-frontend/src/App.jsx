@@ -30,20 +30,24 @@ function App() {
 
     useEffect(() => {
         setTimeout(() => setShowIntro(false), 3000);
-
+    
         // ✅ If user is coming from an invite link, fetch inviter details
         const urlParams = new URLSearchParams(window.location.search);
         const inviteCode = urlParams.get("invite");
-
+    
         if (inviteCode) {
+            console.log("Fetching invite details for code:", inviteCode); // ✅ Debugging log
+    
             axios.get(`${API_URL}/game/${inviteCode}`)
                 .then(response => {
+                    console.log("✅ Invite details received:", response.data); // ✅ Debugging log
                     setInviter(response.data.inviter);
                     setInviterScore(response.data.score);
                 })
-                .catch(error => console.error("Error fetching inviter details:", error));
+                .catch(error => console.error("❌ Error fetching inviter details:", error));
         }
     }, []);
+    
 
         // ✅ Timer for 1-Min Timer Mode
     useEffect(() => {
