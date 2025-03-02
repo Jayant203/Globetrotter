@@ -176,20 +176,20 @@ function App() {
                         ✅ Start Game
                     </button>
                 </motion.div>
+            ) : !gameMode ? (
+                <motion.div className="glass flex flex-col items-center text-center p-6 w-96">
+                    <h1 className="text-5xl font-extrabold mb-6">Choose Mode</h1>
+                    <button onClick={() => startGame("timer")} className="glowing">
+                        ⏳ 1-Min Timer Mode
+                    </button>
+                    <button onClick={() => startGame("points")} className="glowing">
+                        🎯 Points Mode
+                    </button>
+                    <button onClick={() => setInvitePopup(true)} className="glowing">
+                        🎉 Challenge a Friend
+                    </button>
+                </motion.div>
             ) : null}
-
-            {invitePopup && (
-                <div className="invite-popup fixed inset-0 flex items-center justify-center bg-black bg-opacity-80">
-                    <div className="bg-white p-6 rounded-lg text-center">
-                        <h2 className="text-2xl font-bold">🎉 Invite Your Friend!</h2>
-                        <QRCode value={inviteLink} className="mt-4 mx-auto" />
-                        <button onClick={() => navigator.clipboard.writeText(inviteLink)} className="mt-4 glowing">
-                            📋 Copy Link
-                        </button>
-                        <button onClick={() => setInvitePopup(false)} className="quit-button mt-4">❌ Close</button>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
