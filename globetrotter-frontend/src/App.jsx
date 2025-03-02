@@ -60,20 +60,23 @@ function App() {
         try {
             setQuestionLoaded(false);
             const response = await axios.get(`${API_URL}/destination/random`);
-            setClues(response.data.clues);
-            setOptions(response.data.options);
-            setCorrectAnswer(response.data.name);
-            setResult(null);
-            setQuestionLoaded(true);
+            if (response.data) {
+                setClues(response.data.clues);
+                setOptions(response.data.options);
+                setCorrectAnswer(response.data.name);
+                setResult(null);
+                setQuestionLoaded(true);
+            } else {
+                console.error("Error: No data received from API");
+            }
         } catch (error) {
             console.error("Error fetching destination", error);
         }
     }
 
     function startGame(mode) {
-        setGameMode(null);
-        setInvitePopup(false);
         setGameOver(false);
+        setInvitePopup(false);
         setTimeout(() => {
             setGameMode(mode);
             setScore(0);
@@ -182,17 +185,7 @@ function App() {
                         onChange={(e) => setUsername(e.target.value)}
                         className="p-4 text-lg rounded-lg bg-white text-gray-900 w-full text-center border"
                     />
-                    <button
-                        onClick={() => {
-                            if (username.trim() !== "") {
-                                localStorage.setItem("username", username);
-                                setIsRegistered(true);
-                            } else {
-                                alert("Please enter a valid username!");
-                            }
-                        }}
-                        className="p-4 mt-4 w-full glowing"
-                    >
+                    <button onClick={() => setIsRegistered(true)} className="p-4 mt-4 w-full glowing">
                         ✅ Start Game
                     </button>
                 </motion.div>
