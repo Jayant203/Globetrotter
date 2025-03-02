@@ -90,8 +90,10 @@ function App() {
                 setIncorrectCount(prev => prev + 1);
             }
 
-            // ✅ Auto-fetch next question after answering
-            setTimeout(fetchDestination, 1000);
+            // ✅ Auto-fetch next question after answering (Only for Timer Mode)
+            if (gameMode === "timer") {
+                setTimeout(fetchDestination, 1000);
+            }
         } catch (error) {
             console.error("Error verifying answer", error);
         }
