@@ -73,7 +73,7 @@ function App() {
     function startGame(mode) {
         setGameMode(null);
         setInvitePopup(false);
-        setGameOver(false); // ✅ Ensure leaderboard resets when game starts
+        setGameOver(false);
         setTimeout(() => {
             setGameMode(mode);
             setScore(0);
@@ -114,6 +114,26 @@ function App() {
         }
     }
 
+    async function challengeFriend() {
+        if (!username.trim()) {
+            alert("Please enter a username first!");
+            return;
+        }
+
+        try {
+            const response = await axios.post(`${API_URL}/game/challenge`, { username, score });
+            setInviteLink(response.data.inviteLink);
+            setInvitePopup(true);
+        } catch (error) {
+            console.error("Challenge error:", error);
+        }
+    }
+
+    function copyInviteLink() {
+        navigator.clipboard.writeText(inviteLink);
+        alert("Invite link copied! Share it with your friends.");
+    }
+
     return (
         <div className="relative w-full h-screen flex flex-col items-center justify-center bg-gray-200 text-gray-900">
             {showIntro ? (
@@ -141,7 +161,7 @@ function App() {
                     <h1 className="text-5xl font-extrabold mb-4">Game Over 🎮</h1>
                     <p className="text-xl">✅ Correct: {correctCount} | ❌ Incorrect: {incorrectCount}</p>
                     <p className="text-xl font-bold">🏆 Final Score: {score}</p>
-                    <button onClick={() => setGameOver(false)} className="restart-button">
+                    <button onClick={() => setGameMode(null)} className="restart-button">
                         🔄 Play Again
                     </button>
                 </motion.div>
@@ -184,9 +204,6 @@ function App() {
                     </button>
                     <button onClick={() => startGame("points")} className="glowing">
                         🎯 Points Mode
-                    </button>
-                    <button onClick={() => setInvitePopup(true)} className="glowing">
-                        🎉 Challenge a Friend
                     </button>
                 </motion.div>
             ) : null}
