@@ -28,7 +28,8 @@ router.post("/challenge", async (req, res) => {
         await gameSession.save();
 
         // ✅ FIX: Ensure correct path
-        res.json({ inviteLink: `${FRONTEND_URL}/game/${inviteCode}` });
+       // res.json({ inviteLink: `${FRONTEND_URL}/game/${inviteCode}` });
+       res.json({ inviteLink: `${FRONTEND_URL}/?invite=${inviteCode}` });
 
     } catch (error) {
         console.error("Challenge error:", error);
