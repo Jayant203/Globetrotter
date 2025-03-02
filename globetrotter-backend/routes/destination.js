@@ -25,24 +25,24 @@ const crypto = require("crypto");
 // });
 
 // ✅ Create a challenge link
-router.post("/challenge", async (req, res) => {
-    const { username, score } = req.body;
+// router.post("/challenge", async (req, res) => {
+//     const { username, score } = req.body;
 
-    try {
-        const user = await User.findOne({ username });
-        if (!user) return res.status(404).json({ error: "User not found" });
+//     try {
+//         const user = await User.findOne({ username });
+//         if (!user) return res.status(404).json({ error: "User not found" });
 
-        const inviteCode = crypto.randomBytes(4).toString("hex");
+//         const inviteCode = crypto.randomBytes(4).toString("hex");
 
-        const gameSession = new GameSession({ inviter: user._id, score, inviteCode });
-        await gameSession.save();
+//         const gameSession = new GameSession({ inviter: user._id, score, inviteCode });
+//         await gameSession.save();
 
-        res.json({ inviteLink: `https://yourgame.com/play?invite=${inviteCode}` });
-    } catch (error) {
-        console.error("Challenge error:", error);
-        res.status(500).json({ error: "Server error" });
-    }
-});
+//         res.json({ inviteLink: `https://yourgame.com/play?invite=${inviteCode}` });
+//     } catch (error) {
+//         console.error("Challenge error:", error);
+//         res.status(500).json({ error: "Server error" });
+//     }
+// });
 
 
 
