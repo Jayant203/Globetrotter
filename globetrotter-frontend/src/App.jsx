@@ -108,15 +108,24 @@ function App() {
             alert("Please enter a username first!");
             return;
         }
-
+    
         try {
-            const response = await axios.post(`${API_URL}/game/challenge`, { username, score });
+            console.log("✅ Sending request to invite a friend...");
+            
+            const response = await axios.post(`${API_URL}/game/challenge`, { 
+                username, 
+                score 
+            });
+    
+            console.log("✅ Received invite link:", response.data.inviteLink);
             setInviteLink(response.data.inviteLink);
             setInvitePopup(true);
         } catch (error) {
-            console.error("Challenge error:", error);
+            console.error("❌ Challenge error:", error.response ? error.response.data : error);
+            alert("Error inviting friend. Please try again.");
         }
     }
+    
 
     function copyInviteLink() {
         navigator.clipboard.writeText(inviteLink);

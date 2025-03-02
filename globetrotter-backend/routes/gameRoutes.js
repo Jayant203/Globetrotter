@@ -8,11 +8,14 @@ const FRONTEND_URL = "https://mellow-magic-production.up.railway.app"; // ✅ En
 
 // ✅ Ensure user is registered before inviting
 router.post("/challenge", async (req, res) => {
+    console.log("✅ Received request at /api/game/challenge", req.body);
+
     const { username, score } = req.body;
 
     try {
         let user = await User.findOne({ username });
         if (!user) {
+            console.log("❌ User not found:", username);
             return res.status(404).json({ error: "User not registered!" });
         }
 
@@ -27,15 +30,16 @@ router.post("/challenge", async (req, res) => {
         });
         await gameSession.save();
 
-        // ✅ FIX: Ensure correct path
-       // res.json({ inviteLink: `${FRONTEND_URL}/game/${inviteCode}` });
-       res.json({ inviteLink: `${FRONTEND_URL}/?invite=${inviteCode}` });
+        console.log("✅ Game session created:", inviteCode);
+
+        res.json({ inviteLink: `${FRONTEND_URL}/?invite=${inviteCode}` });
 
     } catch (error) {
-        console.error("Challenge error:", error);
+        console.error("❌ Challenge error:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
+
 
 // ✅ Retrieve game session details using invite link
 router.get("/game/:inviteCode", async (req, res) => {
