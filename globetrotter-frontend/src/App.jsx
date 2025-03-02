@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stars, Sphere } from "@react-three/drei"; // ✅ Added Sphere back
+import { OrbitControls, Stars, Sphere } from "@react-three/drei";
 import Confetti from "react-confetti";
 import QRCode from "react-qr-code";
 
@@ -51,7 +51,7 @@ function App() {
                 setTimer(prev => prev - 1);
             }, 1000);
         } else if (timer === 0) {
-            handleQuit(); // ✅ Call handleQuit when timer reaches zero
+            handleQuit();
         }
         return () => clearInterval(countdown);
     }, [gameMode, timer]);
@@ -204,6 +204,9 @@ function App() {
                     </button>
                     <button onClick={() => startGame("points")} className="glowing">
                         🎯 Points Mode
+                    </button>
+                    <button onClick={challengeFriend} className="glowing">
+                        🎉 Challenge a Friend
                     </button>
                 </motion.div>
             ) : null}
