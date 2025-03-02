@@ -45,6 +45,18 @@ function App() {
         }
     }, []);
 
+    useEffect(() => {
+        let countdown;
+        if (gameMode === "timer" && timer > 0) {
+            countdown = setInterval(() => {
+                setTimer(prev => prev - 1);
+            }, 1000);
+        } else if (timer === 0) {
+            endGame();
+        }
+        return () => clearInterval(countdown);
+    }, [gameMode, timer]);
+
     async function fetchDestination() {
         try {
             setQuestionLoaded(false);
@@ -61,7 +73,7 @@ function App() {
 
     function startGame(mode) {
         setGameMode(null);
-        setInvitePopup(false); // ✅ Hide invite popup when starting game mode
+        setInvitePopup(false);
         setTimeout(() => {
             setGameMode(mode);
             setScore(0);
@@ -173,6 +185,8 @@ function App() {
                 </motion.div>
             ) : (
                 <motion.div className="glass text-center w-full max-w-2xl p-6">
+                    {gameMode === "timer" && <p className="text-xl font-bold">⏳ Time Left: {timer}s</p>}
+
                     <div className="question-box">{clues.join(" / ")}</div>
 
                     {questionLoaded && (
@@ -188,20 +202,19 @@ function App() {
                     {result && <motion.div className="mt-6 text-xl font-bold">{result}</motion.div>}
                     {result && result.includes("✅") && <Confetti />}
 
-                    {questionLoaded && (
-                        <>
-                            <button onClick={fetchDestination} className="restart-button">🔄 Next Question</button>
-                            <button onClick={handleQuit} className="quit-button">⏹ Quit Game</button>
-                        </>
+                    {gameOver && (
+                        <div className="mt-6">
+                            <p>✅ Correct: {correctCount} | ❌ Incorrect: {incorrectCount} | 🏆 Score: {score}</p>
+                        </div>
                     )}
+
+                    <button onClick={handleQuit} className="quit-button mt-4">⏹ Quit Game</button>
                 </motion.div>
             )}
 
-            {invitePopup && (
+            {invitePopup && inviteLink && (
                 <div className="invite-popup fixed inset-0 flex items-center justify-center bg-black bg-opacity-80">
                     <div className="bg-white p-6 rounded-lg text-center">
-                        <h2 className="text-2xl font-bold">🎉 Invite Your Friend!</h2>
-                        <p className="mt-2">Send this link to your friend:</p>
                         <QRCode value={inviteLink} className="mt-4 mx-auto" />
                         <button onClick={copyInviteLink} className="mt-4 glowing">📋 Copy Link</button>
                         <button onClick={() => setInvitePopup(false)} className="quit-button mt-4">❌ Close</button>
