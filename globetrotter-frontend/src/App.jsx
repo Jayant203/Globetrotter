@@ -22,19 +22,21 @@ function App() {
     const [gameOver, setGameOver] = useState(false);
     const [inviteLink, setInviteLink] = useState("");
     const [timer, setTimer] = useState(60);
+    const [questionLoaded, setQuestionLoaded] = useState(false);
 
     useEffect(() => {
         setTimeout(() => setShowIntro(false), 3000);
     }, []);
 
-    // ✅ Start countdown timer when "timer" mode is selected
+    // ✅ Timer only starts after the question loads
     useEffect(() => {
-        if (gameMode === "timer") {
+        if (gameMode === "timer" && questionLoaded) {
             const interval = setInterval(() => {
                 setTimer(prevTimer => {
                     if (prevTimer <= 1) {
                         clearInterval(interval);
                         setGameOver(true);
+                        setGameMode(null); // ✅ Redirect to mode selection after quitting
                     }
                     return prevTimer - 1;
                 });
@@ -42,28 +44,33 @@ function App() {
 
             return () => clearInterval(interval);
         }
-    }, [gameMode]);
+    }, [gameMode, questionLoaded]);
 
     async function fetchDestination() {
         try {
+            setQuestionLoaded(false); // ✅ Prevents buttons from appearing before question loads
             const response = await axios.get(`${API_URL}/destination/random`);
             setClues(response.data.clues);
             setOptions(response.data.options);
             setCorrectAnswer(response.data.name);
             setResult(null);
+            setQuestionLoaded(true); // ✅ Ensures question is ready before showing buttons
         } catch (error) {
             console.error("Error fetching destination", error);
         }
     }
 
     function startGame(mode) {
-        setGameMode(mode);
-        setScore(0);
-        setCorrectCount(0);
-        setIncorrectCount(0);
-        setGameOver(false);
-        setTimer(60); // ✅ Reset timer
-        fetchDestination();
+        setGameMode(null); // ✅ Ensures proper mode reset
+        setTimeout(() => {
+            setGameMode(mode);
+            setScore(0);
+            setCorrectCount(0);
+            setIncorrectCount(0);
+            setGameOver(false);
+            setTimer(60);
+            fetchDestination();
+        }, 500); // ✅ Small delay ensures smooth transition
     }
 
     function handleQuit() {
@@ -81,19 +88,17 @@ function App() {
             });
 
             if (response.data.correct) {
-                setResult("✅ Correct!");
+                setResult("✅ Correct! 🎉");
                 setScore(prev => prev + 10);
                 setCorrectCount(prev => prev + 1);
             } else {
-                setResult("❌ Incorrect!");
+                setResult("❌ Incorrect! 😞");
                 setScore(prev => prev - 5);
                 setIncorrectCount(prev => prev + 1);
             }
 
-            // ✅ Auto-fetch next question after answering (Only in Timer Mode)
-            if (gameMode === "timer") {
-                setTimeout(fetchDestination, 1000);
-            }
+            // ✅ Faster transition to next question
+            setTimeout(fetchDestination, gameMode === "timer" ? 600 : 1000);
         } catch (error) {
             console.error("Error verifying answer", error);
         }
@@ -109,7 +114,7 @@ function App() {
     }
 
     return (
-        <div className="relative w-full h-screen flex flex-col items-center justify-center text-white">
+        <div className="relative w-full h-screen flex flex-col items-center justify-center text-gray-900 bg-gray-100">
             {showIntro ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                     <Canvas>
@@ -131,12 +136,7 @@ function App() {
                     </motion.h1>
                 </div>
             ) : !isRegistered ? (
-                <motion.div
-                    initial={{ y: -50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 1 }}
-                    className="glass flex flex-col items-center text-center w-96"
-                >
+                <motion.div className="glass flex flex-col items-center text-center w-96">
                     <input
                         type="text"
                         placeholder="Enter your username"
@@ -160,7 +160,7 @@ function App() {
                 </motion.div>
             ) : gameOver ? (
                 <motion.div className="glass flex flex-col items-center text-center p-6 w-96">
-                    <h1 className="text-4xl font-bold text-white mb-4">Game Over 🎮</h1>
+                    <h1 className="text-4xl font-bold text-gray-900 mb-4">Game Over 🎮</h1>
                     <p className="text-xl">🏆 Final Score: {score}</p>
                     <p>✅ Correct Answers: {correctCount}</p>
                     <p>❌ Incorrect Answers: {incorrectCount}</p>
@@ -170,7 +170,7 @@ function App() {
                 </motion.div>
             ) : !gameMode ? (
                 <motion.div className="glass flex flex-col items-center text-center p-6 w-96">
-                    <h1 className="text-5xl font-extrabold mb-6 text-white">Choose Mode</h1>
+                    <h1 className="text-5xl font-extrabold mb-6 text-gray-900">Choose Mode</h1>
                     <button onClick={() => startGame("timer")} className="glowing">
                         ⏳ 1-Min Timer Mode
                     </button>
@@ -183,34 +183,32 @@ function App() {
                 </motion.div>
             ) : (
                 <motion.div className="glass text-center w-full max-w-2xl p-6">
-                    {gameMode === "timer" && !gameOver && (
+                    {questionLoaded && gameMode === "timer" && (
                         <p className="absolute top-4 right-4 text-2xl font-bold">⏳ {timer}s</p>
                     )}
-                    <div className="question-box">
-                        {clues.join(" / ")}
-                    </div>
 
-                    {/* ✅ Display Options */}
-                    <div className="button-container mt-6">
-                        {options.map(option => (
-                            <button 
-                                key={option} 
-                                className="glowing"
-                                onClick={() => handleAnswer(option)}
-                            >
-                                {option}
-                            </button>
-                        ))}
-                    </div>
+                    <div className="question-box">{clues.join(" / ")}</div>
+
+                    {questionLoaded && (
+                        <div className="button-container mt-6">
+                            {options.map(option => (
+                                <button key={option} className="glowing" onClick={() => handleAnswer(option)}>
+                                    {option}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     {result && <motion.div className="mt-6 text-xl font-bold">{result}</motion.div>}
 
-                    <button onClick={fetchDestination} className="restart-button">
-                        🔄 Next Question
-                    </button>
-                    <button onClick={handleQuit} className="quit-button">
-                        ⏹ Quit Game
-                    </button>
+                    {result && result.includes("✅") && <Confetti />}
+
+                    {questionLoaded && (
+                        <>
+                            <button onClick={fetchDestination} className="restart-button">🔄 Next Question</button>
+                            <button onClick={handleQuit} className="quit-button">⏹ Quit Game</button>
+                        </>
+                    )}
                 </motion.div>
             )}
         </div>
