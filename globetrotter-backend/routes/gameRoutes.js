@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const User = require("./models/User");
-const GameSession = require("./models/GameSession");
+const User = require("../models/User");
+const GameSession = require("../models/GameSession");
 const crypto = require("crypto");
 
 const FRONTEND_URL = "https://mellow-magic-production.up.railway.app"; // ✅ Ensure correct frontend URL
