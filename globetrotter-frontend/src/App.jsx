@@ -5,10 +5,12 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stars } from "@react-three/drei";
 import Confetti from "react-confetti";
 import QRCode from "react-qr-code";
+import './App.css'; // Import the CSS file for animations
 
 const API_URL = "https://globetrotter-production.up.railway.app/api";
 
 function App() {
+
     const [showIntro, setShowIntro] = useState(true);
     const [username, setUsername] = useState(localStorage.getItem("username") || "");
     const [isRegistered, setIsRegistered] = useState(false);
@@ -27,6 +29,7 @@ function App() {
     const [questionLoaded, setQuestionLoaded] = useState(false);
     const [inviter, setInviter] = useState(null);
     const [inviterScore, setInviterScore] = useState(null);
+    const [showAnimation, setShowAnimation] = useState(true); // New state variable
 
     useEffect(() => {
         setTimeout(() => setShowIntro(false), 3000);
@@ -48,6 +51,12 @@ function App() {
         }
     }, []);
     
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowAnimation(false); // Hide animation after 3 seconds
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, []);
 
         // ✅ Timer for 1-Min Timer Mode
     useEffect(() => {
@@ -153,7 +162,11 @@ function App() {
 
     return (
         <div className="relative w-full h-screen flex flex-col items-center justify-center bg-gray-200 text-gray-900">
-            {showIntro ? (
+            {showAnimation ? (
+                <div className="globetrotter-animation">
+                    Welcome to the Globetrotter Challenge!
+                </div>
+            ) : showIntro ? (
                 <motion.h1 className="text-6xl font-extrabold">🌍 Globetrotter Challenge</motion.h1>
             ) : gameOver ? (
                 <motion.div className="glass flex flex-col items-center text-center p-6 w-96">
@@ -187,7 +200,7 @@ function App() {
                                 localStorage.setItem("username", username);
                                 setIsRegistered(true);
                             } else {
-                                alert("Please enter a valid username!");
+                                alert("Please enter a valid username!"); 
                             }
                         }}
                         className="p-4 mt-4 w-full glowing"
